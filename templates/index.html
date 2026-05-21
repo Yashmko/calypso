@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRE Investigator - Pirates of the Coral-bean</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coral: {
+                            50: '#fff5f2',
+                            100: '#ffe6e0',
+                            200: '#ffd1c4',
+                            300: '#ffb3a0',
+                            400: '#ff8c6b',
+                            500: '#ff6b4a',
+                            600: '#ed4c2c',
+                            700: '#c73a1e',
+                            800: '#a4331c',
+                            900: '#88301f',
+                        },
+                        dark: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a25',
+                            600: '#222230',
+                            500: '#2a2a3a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #0a0a0f;
+            color: #e2e8f0;
+        }
+        
+        /* Glassmorphism Card */
+        .glass {
+            background: rgba(26, 26, 37, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .glass-strong {
+            background: rgba(18, 18, 26, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Glow Effects */
+        .glow-coral {
+            box-shadow: 0 0 30px rgba(255, 107, 74, 0.15), 0 0 60px rgba(255, 107, 74, 0.05);
+        }
+        
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 107, 74, 0.4), 0 0 40px rgba(255, 107, 74, 0.15);
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #ff8c6b 0%, #ff6b4a 50%, #ed4c2c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Animated Gradient Border */
+        .gradient-border {
+            position: relative;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,107,74,0.5), rgba(255,107,74,0.1), rgba(255,140,107,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        
+        /* Terminal */
+        .terminal {
+            background: #0d0d14;
+            border: 1px solid rgba(255, 107, 74, 0.15);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .terminal-header {
+            background: rgba(255, 107, 74, 0.08);
+            border-bottom: 1px solid rgba(255, 107, 74, 0.1);
+        }
+        
+        /* Typewriter Cursor */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background: #ff6b4a;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Spinner */
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255, 107, 74, 0.2);
+            border-top-color: #ff6b4a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Pulse Animation */
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 74, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 74, 0.25); }
+        }
+        
+        /* Fade In */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Slide In */
+        .slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a3a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff6b4a;
+        }
+        
+        /* Textarea */
+        textarea:focus {
+            outline: none;
+            border-color: #ff6b4a;
+            box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.15);
+        }
+        
+        /* Button Hover */
+        .btn-investigate {
+            background: linear-gradient(135deg, #ff8c6b 0%, #ff6b4a 50%, #ed4c2c 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-investigate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-investigate:hover::before {
+            left: 100%;
+        }
+        .btn-investigate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 74, 0.4);
+        }
+        .btn-investigate:active {
+            transform: translateY(0);
+        }
+        
+        /* Stat Badge */
+        .stat-badge {
+            background: rgba(255, 107, 74, 0.08);
+            border: 1px solid rgba(255, 107, 74, 0.2);
+            transition: all 0.3s ease;
+        }
+        .stat-badge:hover {
+            background: rgba(255, 107, 74, 0.15);
+            border-color: rgba(255, 107, 74, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Report Section */
+        .report-section {
+            border-left: 3px solid #ff6b4a;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Floating Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 107, 74, 0.4);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+        
+        /* Content Layer */
+        .content {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Background Effects -->
+    <div class="particles" id="particles"></div>
+    <div class="noise"></div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <header class="border-b border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-coral-400 to-coral-600 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold text-white">
+                                <span class="gradient-text">SRE Investigator</span>
+                            </h1>
+                            <p class="text-xs text-gray-500 font-mono">Powered by Coral + Gemini</p>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4 pl-4 border-l border-white/10">
+                            <div id="status-github" class="flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-mono text-gray-500">
+                                <span>GITHUB</span>
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                            </div>
+                            <div id="status-sentry" class="flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-mono text-gray-500">
+                                <span>SENTRY</span>
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-coral-500/10 text-coral-400 border border-coral-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-coral-400 mr-2 animate-pulse"></span>
+                            Live
+                        </span>
+                        <a href="https://www.wemakedevs.org/hackathons/coral" target="_blank" class="text-xs text-gray-500 hover:text-coral-400 transition-colors">
+                            Pirates of the Coral-bean 🏴‍☠️
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- LEFT PANEL: Input -->
+                <div class="space-y-6">
+                    <!-- Title Section -->
+                    <div class="fade-in">
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+                            Incident <span class="gradient-text">Investigator</span>
+                        </h2>
+                        <p class="text-gray-400 text-sm sm:text-base">
+                            Drop your alert, and let the crew dig through your GitHub and Sentry data to find what broke.
+                        </p>
+                    </div>
+                    
+                    <!-- SQL Terminal Demo -->
+                    <div class="terminal rounded-xl overflow-hidden fade-in" style="animation-delay: 0.1s">
+                        <div class="terminal-header px-4 py-2 flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            <span class="ml-3 text-xs text-gray-500 font-mono">coral-query-demo.sql</span>
+                        </div>
+                        <div class="p-4 text-xs sm:text-sm font-mono leading-relaxed overflow-x-auto">
+                            <div class="text-gray-500 mb-2">-- Cross-source JOIN: GitHub + Sentry</div>
+                            <div id="typewriter" class="text-coral-300"></div>
+                            <span class="cursor"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Card -->
+                    <div class="glass rounded-2xl p-6 gradient-border fade-in" style="animation-delay: 0.2s">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                            <div>
+                                <label for="repo-input" class="block text-sm font-semibold text-white mb-2">
+                                    <span class="text-coral-400 mr-2">⚓</span> GitHub Repository
+                                </label>
+                                <input 
+                                    id="repo-input" 
+                                    type="text"
+                                    class="w-full px-4 py-2 rounded-xl bg-dark-900/80 border border-dark-500 text-gray-200 placeholder-gray-600 text-sm transition-all duration-300 focus:outline-none focus:border-coral-500 focus:ring-1 focus:ring-coral-500"
+                                    placeholder="e.g., Yashmko/Auditflow"
+                                    value="Yashmko/Auditflow"
+                                >
+                            </div>
+                            <div>
+                                <label for="compare-input" class="block text-sm font-semibold text-white mb-2">
+                                    <span class="text-coral-400 mr-2">⚔</span> Compare With (Optional)
+                                </label>
+                                <input 
+                                    id="compare-input" 
+                                    type="text"
+                                    class="w-full px-4 py-2 rounded-xl bg-dark-900/80 border border-dark-500 text-gray-200 placeholder-gray-600 text-sm transition-all duration-300 focus:outline-none focus:border-coral-500 focus:ring-1 focus:ring-coral-500"
+                                    placeholder="e.g., facebook/react"
+                                >
+                            </div>
+                        </div>
+
+                        <label for="alert-input" class="block text-sm font-semibold text-white mb-3">
+                            <span class="text-coral-400 mr-2">⚑</span> Alert Description
+                        </label>
+                        <textarea 
+                            id="alert-input" 
+                            rows="5" 
+                            class="w-full px-4 py-3 rounded-xl bg-dark-900/80 border border-dark-500 text-gray-200 placeholder-gray-600 text-sm resize-none transition-all duration-300"
+                            placeholder="e.g., Database timeout errors in production API since last deploy..."
+                        ></textarea>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-xs text-gray-600">Press Ctrl+Enter to investigate</span>
+                            <button 
+                                id="investigate-btn"
+                                onclick="runInvestigation()"
+                                class="btn-investigate px-6 py-3 rounded-xl text-white font-semibold text-sm flex items-center space-x-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <span>Investigate</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Query History -->
+                    <div id="query-history-card" class="glass rounded-2xl p-6 border border-white/5 fade-in" style="animation-delay: 0.3s">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">Live Query History</h4>
+                            </div>
+                            <span class="text-[10px] text-gray-600 font-mono">Real-time Performance</span>
+                        </div>
+                        <div id="query-history-list" class="space-y-3 max-h-[300px] overflow-y-auto">
+                            <div class="text-center py-4 text-xs text-gray-600 italic">No queries executed yet.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading State (hidden by default) -->
+                    <div id="loading" class="hidden glass rounded-2xl p-8 text-center">
+                        <div class="spinner mx-auto mb-4"></div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Investigating...</h3>
+                        <p class="text-sm text-gray-400" id="loading-status">Querying Sentry for recent errors...</p>
+                        <div class="mt-4 flex justify-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-coral-500 animate-bounce" style="animation-delay: 0s"></span>
+                            <span class="w-2 h-2 rounded-full bg-coral-500 animate-bounce" style="animation-delay: 0.1s"></span>
+                            <span class="w-2 h-2 rounded-full bg-coral-500 animate-bounce" style="animation-delay: 0.2s"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RIGHT PANEL: Results -->
+                <div class="space-y-6">
+                    <!-- Empty State -->
+                    <div id="empty-state" class="glass rounded-2xl p-8 text-center fade-in h-full flex flex-col justify-center items-center min-h-[400px]">
+                        <div class="w-20 h-20 rounded-2xl bg-coral-500/5 border border-coral-500/10 flex items-center justify-center mb-6 pulse-glow">
+                            <svg class="w-10 h-10 text-coral-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">No Investigation Yet</h3>
+                        <p class="text-gray-400 text-sm max-w-sm">
+                            Enter an alert description on the left and click <span class="text-coral-400 font-semibold">Investigate</span> to generate your incident report.
+                        </p>
+                    </div>
+                    
+                    <!-- Results (hidden by default) -->
+                    <div id="results" class="hidden space-y-6">
+                        <!-- Stats Bar -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 fade-in">
+                            <div class="stat-badge rounded-xl p-3 text-center">
+                                <div class="text-2xl font-bold text-coral-400" id="stat-sentry">0</div>
+                                <div class="text-xs text-gray-400 mt-1">Sentry Errors</div>
+                            </div>
+                            <div class="stat-badge rounded-xl p-3 text-center">
+                                <div class="text-2xl font-bold text-coral-400" id="stat-commits">0</div>
+                                <div class="text-xs text-gray-400 mt-1">Commits</div>
+                            </div>
+                            <div class="stat-badge rounded-xl p-3 text-center">
+                                <div class="text-2xl font-bold text-coral-400" id="stat-alerts">0</div>
+                                <div class="text-xs text-gray-400 mt-1">Security Alerts</div>
+                            </div>
+                            <div class="stat-badge rounded-xl p-3 text-center">
+                                <div class="text-2xl font-bold text-coral-400" id="stat-correlations">0</div>
+                                <div class="text-xs text-gray-400 mt-1">Correlations</div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Analysis Card -->
+                        <div class="glass-strong rounded-2xl p-6 gradient-border fade-in" style="animation-delay: 0.1s">
+                            <div class="flex items-center space-x-3 mb-6">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-600 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-white">AI Analysis</h3>
+                                <div class="flex items-center space-x-2 ml-auto">
+                                    <button 
+                                        onclick="createGithubIssue()"
+                                        id="fix-btn"
+                                        class="hidden px-3 py-1.5 rounded-lg bg-coral-500/10 border border-coral-500/30 text-coral-400 text-xs font-bold hover:bg-coral-500/20 transition-all flex items-center space-x-1"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 4.438 9.8 10.564 11.307.6.111.82-.261.82-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.44-1.304.759-1.607-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.216.694.825.576 6.138-1.508 10.564-6.005 10.564-11.307 0-6.627-5.373-12-12-12z"/></svg>
+                                        <span>Create Fix Issue</span>
+                                    </button>
+                                    <span class="text-xs text-gray-500 font-mono" id="report-timestamp"></span>
+                                </div>
+                            </div>
+                            
+                            <div id="ai-analysis" class="prose prose-invert prose-sm max-w-none">
+                                <!-- AI report content goes here -->
+                            </div>
+
+                            <!-- Follow-up Chat -->
+                            <div id="chat-section" class="hidden mt-8 pt-6 border-t border-white/5">
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-coral-500"></div>
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">Follow-up Investigation</h4>
+                                </div>
+                                <div id="chat-history" class="space-y-4 mb-4"></div>
+                                <div class="relative">
+                                    <input 
+                                        id="chat-input"
+                                        type="text"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-dark-900 border border-white/5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-coral-500/50 transition-all"
+                                        placeholder="Ask a follow-up question (e.g., 'Who authored the most commits?')"
+                                        onkeydown="if(event.key==='Enter') sendChat()"
+                                    >
+                                    <button 
+                                        onclick="sendChat()"
+                                        class="absolute right-2 top-2 p-1 text-gray-500 hover:text-coral-400 transition-colors"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Raw Data Tabs -->
+                        <div class="glass rounded-2xl overflow-hidden fade-in" style="animation-delay: 0.2s">
+                            <!-- Tab Headers -->
+                            <div class="flex border-b border-white/5 overflow-x-auto">
+                                <button onclick="switchTab('timeline')" id="tab-timeline" class="tab-btn px-4 py-3 text-sm font-medium text-coral-400 border-b-2 border-coral-400 bg-coral-400/5 whitespace-nowrap">
+                                    Evidence Timeline
+                                </button>
+                                <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap transition-colors">
+                                    Repo Comparison
+                                </button>
+                                <button onclick="switchTab('sentry')" id="tab-sentry" class="tab-btn px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap transition-colors">
+                                    Sentry Issues
+                                </button>
+                                <button onclick="switchTab('commits')" id="tab-commits" class="tab-btn px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap transition-colors">
+                                    Commits
+                                </button>
+                                <button onclick="switchTab('joins')" id="tab-joins" class="tab-btn px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap transition-colors">
+                                    Cross-Source Joins
+                                </button>
+                                <button onclick="switchTab('raw')" id="tab-raw" class="tab-btn px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap transition-colors">
+                                    Raw JSON
+                                </button>
+                            </div>
+                            
+                            <!-- Tab Contents -->
+                            <div class="p-4">
+                                <div id="content-timeline" class="tab-content py-4">
+                                    <div id="query-view-timeline" class="hidden mb-4"></div>
+                                    <div id="timeline-container" class="max-h-[500px] overflow-y-auto px-2"></div>
+                                </div>
+                                <div id="content-comparison" class="tab-content hidden py-4">
+                                    <div id="query-view-comparison" class="hidden mb-4"></div>
+                                    <div id="comparison-container" class="overflow-x-auto"></div>
+                                </div>
+                                <div id="content-sentry" class="tab-content hidden">
+                                    <div id="query-view-sentry_issues" class="hidden mb-4"></div>
+                                    <div id="sentry-table" class="overflow-x-auto"></div>
+                                </div>
+                                <div id="content-commits" class="tab-content hidden">
+                                    <div id="query-view-github_commits" class="hidden mb-4"></div>
+                                    <div id="commits-table" class="overflow-x-auto"></div>
+                                </div>
+                                <div id="content-joins" class="tab-content hidden">
+                                    <div id="query-view-cross_source_joins" class="hidden mb-4"></div>
+                                    <div id="joins-table" class="overflow-x-auto"></div>
+                                </div>
+                                <div id="content-raw" class="tab-content hidden">
+                                    <pre id="raw-json" class="text-xs font-mono text-gray-400 overflow-x-auto"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="border-t border-white/5 mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600">
+                    <p>Built for <span class="text-coral-500">Pirates of the Coral-bean</span> Hackathon by WeMakeDevs</p>
+                    <p class="mt-2 sm:mt-0">Runs on 2GB RAM with Coral + Gemini</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== PARTICLES ====================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (15 + Math.random() * 25) + 's';
+                p.style.animationDelay = (Math.random() * 20) + 's';
+                p.style.width = (1 + Math.random() * 2) + 'px';
+                p.style.height = p.style.width;
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
+        // ==================== TYPEWRITER ====================
+        const sqlQueries = [
+            `SELECT c.sha, c.commit__message, c.author__login,\n  s.title as sentry_error, s.level\nFROM github.commits c\nJOIN sentry.issues s ON s.first_seen >= c.commit__author__date\nWHERE c.owner = 'Yashmko' AND s.level = 'fatal'\nLIMIT 10;`,
+            `SELECT title, level, status, project\nFROM sentry.issues\nWHERE level IN ('error', 'fatal')\nORDER BY last_seen DESC\nLIMIT 10;`,
+            `SELECT sha, commit__message, author__login\nFROM github.commits\nWHERE owner = 'Yashmko' AND repo = 'Auditflow'\nORDER BY commit__author__date DESC\nLIMIT 10;`
+        ];
+        let queryIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typewriterElement = document.getElementById('typewriter');
+        
+        function typeEffect() {
+            const current = sqlQueries[queryIndex];
+            
+            if (isDeleting) {
+                typewriterElement.textContent = current.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typewriterElement.textContent = current.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            
+            let speed = isDeleting ? 30 : 50;
+            
+            if (!isDeleting && charIndex === current.length) {
+                speed = 3000;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                queryIndex = (queryIndex + 1) % sqlQueries.length;
+                speed = 500;
+            }
+            
+            setTimeout(typeEffect, speed);
+        }
+        typeEffect();
+
+        // ==================== KEYBOARD SHORTCUT ====================
+        document.getElementById('alert-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                runInvestigation();
+            }
+        });
+
+        // ==================== INVESTIGATION ====================
+        let currentReport = null;
+        
+        async function runInvestigation() {
+            const repoInput = document.getElementById('repo-input');
+            const compareInput = document.getElementById('compare-input');
+            const alertInput = document.getElementById('alert-input');
+            const repo = repoInput.value.trim();
+            const compareRepo = compareInput.value.trim();
+            const alertText = alertInput.value.trim();
+            
+            if (!repo) {
+                repoInput.focus();
+                return;
+            }
+
+            if (!alertText) {
+                alertInput.focus();
+                alertInput.classList.add('ring-2', 'ring-coral-500', 'ring-opacity-50');
+                setTimeout(() => alertInput.classList.remove('ring-2', 'ring-coral-500', 'ring-opacity-50'), 1000);
+                return;
+            }
+            
+            // Show loading, hide results
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('results').classList.add('hidden');
+            
+            const loadingStatuses = [
+                'Pinging Coral data sources...',
+                'Querying Sentry for recent errors...',
+                'Fetching GitHub commits and PRs...',
+                'Running cross-source SQL JOIN...',
+                'Comparing repositories via UNION...',
+                'Analyzing with Gemini AI...'
+            ];
+            let statusIdx = 0;
+            const statusInterval = setInterval(() => {
+                statusIdx = (statusIdx + 1) % loadingStatuses.length;
+                document.getElementById('loading-status').textContent = loadingStatuses[statusIdx];
+            }, 2000);
+            
+            try {
+                const response = await fetch('/investigate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        alert: alertText,
+                        repo: repo,
+                        compare_repo: compareRepo
+                    })
+                });
+                
+                clearInterval(statusInterval);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const report = await response.json();
+                currentReport = report;
+                
+                displayResults(report);
+                
+            } catch (error) {
+                clearInterval(statusInterval);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                alert('Investigation failed: ' + error.message);
+            }
+        }
+
+        function displayResults(report) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('fix-btn').classList.remove('hidden');
+            document.getElementById('chat-section').classList.remove('hidden');
+            document.getElementById('chat-history').innerHTML = ''; // Clear old chat
+            
+            // Stats
+            const stats = report.stats || {};
+            document.getElementById('stat-sentry').textContent = stats.sentry_issues_found || 0;
+            document.getElementById('stat-commits').textContent = stats.github_commits_analyzed || 0;
+            document.getElementById('stat-alerts').textContent = stats.security_alerts_found || 0;
+            document.getElementById('stat-correlations').textContent = stats.cross_source_correlations || 0;
+            
+            // Timestamp
+            if (report.timestamp) {
+                const d = new Date(report.timestamp);
+                document.getElementById('report-timestamp').textContent = d.toLocaleString();
+            }
+            
+            // AI Analysis
+            const analysisHtml = markdownToHtml(report.ai_analysis || 'No analysis available.');
+            document.getElementById('ai-analysis').innerHTML = analysisHtml;
+            
+            // Telemetry & Data
+            const raw = report.raw_data || {};
+            const meta = report.queries_meta || {};
+            
+            renderTimeline(raw.timeline || [], meta.timeline);
+            renderComparison(raw.comparison || [], meta.comparison);
+            renderSentryTable(raw.sentry_issues || [], meta.sentry_issues);
+            renderCommitsTable(raw.github_commits || [], meta.github_commits);
+            renderJoinsTable(raw.cross_source_joins || [], meta.cross_source_joins);
+            
+            // Update History Terminal
+            updateQueryHistory(report.live_history || []);
+            
+            document.getElementById('raw-json').textContent = JSON.stringify(report, null, 2);
+            
+            // Default to timeline tab
+            switchTab('timeline');
+            
+            // Scroll to results on mobile
+            if (window.innerWidth < 1024) {
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ==================== CORE Logic ====================
+        
+        async function checkSourceStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                
+                const ghStatus = document.getElementById('status-github');
+                const seStatus = document.getElementById('status-sentry');
+                
+                if (data.github) {
+                    ghStatus.classList.remove('text-gray-500');
+                    ghStatus.classList.add('text-green-400', 'bg-green-400/5', 'border-green-400/20');
+                    ghStatus.querySelector('div').classList.replace('bg-gray-500', 'bg-green-400');
+                }
+                
+                if (data.sentry) {
+                    seStatus.classList.remove('text-gray-500');
+                    seStatus.classList.add('text-green-400', 'bg-green-400/5', 'border-green-400/20');
+                    seStatus.querySelector('div').classList.replace('bg-gray-500', 'bg-green-400');
+                }
+            } catch (e) {
+                console.error("Status check failed", e);
+            }
+        }
+        
+        // Check status on load
+        window.addEventListener('load', checkSourceStatus);
+
+        function updateQueryHistory(history) {
+            const container = document.getElementById('query-history-list');
+            if (!history || history.length === 0) return;
+            
+            container.innerHTML = history.map(q => `
+                <div class="p-3 rounded-lg bg-dark-900 border border-white/5 font-mono text-[10px] hover:border-coral-500/30 transition-all group">
+                    <div class="flex justify-between items-center mb-1 text-gray-500">
+                        <span class="text-coral-500/70 font-bold">SQL EXEC</span>
+                        <span>${q.execution_time_ms}ms</span>
+                    </div>
+                    <div class="text-gray-400 line-clamp-1 group-hover:line-clamp-none transition-all">${escapeHtml(q.sql)}</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleQuery(id) {
+            const el = document.getElementById(`query-view-${id}`);
+            el.classList.toggle('hidden');
+        }
+
+        function renderQueryViewer(id, meta) {
+            if (!meta) return '';
+            return `
+                <div class="mb-4 flex flex-col space-y-2">
+                    <button onclick="toggleQuery('${id}')" class="w-fit text-[10px] font-bold uppercase tracking-widest text-coral-500/60 hover:text-coral-400 transition-colors flex items-center space-x-1">
+                        <span>[ View Coral Query ]</span>
+                        <span class="text-gray-600 font-mono">(${meta.time}ms)</span>
+                    </button>
+                    <div id="query-view-${id}" class="hidden p-3 rounded-lg bg-dark-900 border border-coral-500/20 font-mono text-xs text-coral-300 whitespace-pre-wrap break-all">
+                        ${escapeHtml(meta.sql)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== ACTIONS ====================
+        function createGithubIssue() {
+            if (!currentReport) return;
+            
+            const repo = document.getElementById('repo-input').value.trim();
+            const alertText = document.getElementById('alert-input').value.trim();
+            
+            const title = encodeURIComponent(`Investigation: ${alertText}`);
+            
+            let body = `## SRE Investigator Report\n\n`;
+            body += `**Alert**: ${alertText}\n`;
+            body += `**Analyzed Repository**: ${repo}\n\n`;
+            body += currentReport.ai_analysis;
+            body += `\n\n---\n*Generated by SRE Investigator (Coral + Gemini)*`;
+            
+            const encodedBody = encodeURIComponent(body);
+            const url = `https://github.com/${repo}/issues/new?title=${title}&body=${encodedBody}`;
+            
+            window.open(url, '_blank');
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const question = input.value.trim();
+            if (!question || !currentReport) return;
+            
+            // Add user message to history
+            const history = document.getElementById('chat-history');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'flex flex-col items-end slide-in mb-4';
+            userMsg.innerHTML = `<div class="bg-coral-500/10 border border-coral-500/20 rounded-2xl px-4 py-2 text-sm text-gray-200 max-w-[80%]">${escapeHtml(question)}</div>`;
+            history.appendChild(userMsg);
+            
+            input.value = '';
+            input.disabled = true;
+            
+            // Add thinking state
+            const thinking = document.createElement('div');
+            thinking.id = 'chat-thinking';
+            thinking.className = 'flex space-x-2 items-center text-xs text-gray-500 animate-pulse py-2';
+            thinking.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-coral-500"></div><span>Investigator is thinking...</span>`;
+            history.appendChild(thinking);
+            history.scrollTop = history.scrollHeight;
+            
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    question: question,
+                    context_data: currentReport.raw_data,
+                    alert: document.getElementById('alert-input').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const t = document.getElementById('chat-thinking');
+                if (t) history.removeChild(t);
+                
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'flex flex-col items-start slide-in mb-4';
+                aiMsg.innerHTML = `<div class="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-gray-300 max-w-[95%] prose prose-invert prose-xs">${markdownToHtml(data.answer)}</div>`;
+                history.appendChild(aiMsg);
+                history.scrollTop = history.scrollHeight;
+                input.disabled = false;
+                input.focus();
+            })
+            .catch(err => {
+                const t = document.getElementById('chat-thinking');
+                if (t) history.removeChild(t);
+                input.disabled = false;
+                alert('Chat failed: ' + err.message);
+            });
+        }
+
+            // ==================== TABLES ====================
+            function renderTimeline(events, meta) {
+                const container = document.getElementById('timeline-container');
+                let qViewer = renderQueryViewer('timeline', meta);
+
+                if (!events || events.length === 0) {
+                    container.innerHTML = qViewer + '<p class="text-gray-500 text-sm text-center py-4">No events found in timeline</p>';
+                    return;
+                }
+
+                let html = qViewer;
+                html += '<div class="relative pl-8 border-l border-white/10 space-y-8 ml-4">';
+
+            html += '<div class="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-coral-500 via-coral-500/50 to-transparent"></div>';
+
+            events.forEach(event => {
+                const isCommit = event.type === 'commit';
+                const colorClass = isCommit ? 'bg-blue-500' : 'bg-red-500';
+                const ringClass = isCommit ? 'ring-blue-500/20' : 'ring-red-500/20';
+                const icon = isCommit ? 
+                    '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>' : 
+                    '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+
+                const date = new Date(event.ts).toLocaleString();
+
+                html += `<div class="relative slide-in">
+                    <div class="absolute -left-[40px] top-1 w-6 h-6 rounded-full border-2 border-dark-900 ${colorClass} ring-4 ${ringClass} flex items-center justify-center">
+                        ${icon}
+                    </div>
+                    <div class="glass-strong rounded-xl p-4 border border-white/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider ${isCommit ? 'text-blue-400' : 'text-red-400'}">${event.type}</span>
+                            <span class="text-[10px] text-gray-500 font-mono">${date}</span>
+                        </div>
+                        <p class="text-sm text-gray-200 mb-2">${escapeHtml(event.msg)}</p>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 rounded-full bg-dark-500 flex items-center justify-center text-[8px] font-bold text-gray-400">
+                                ${event.actor ? event.actor[0].toUpperCase() : '?'}
+                            </div>
+                            <span class="text-xs text-gray-500">${escapeHtml(event.actor || 'unknown')}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+            }
+
+        function markdownToHtml(md) {
+            if (!md) return '';
+            
+            return md
+                // Headers
+                .replace(/^### (.+)$/gm, '<h4 class="text-white font-semibold mt-4 mb-2 text-base">$1</h4>')
+                .replace(/^## (.+)$/gm, '<h3 class="text-white font-bold mt-6 mb-3 text-lg report-section">$1</h3>')
+                .replace(/^# (.+)$/gm, '<h2 class="text-white font-bold mt-8 mb-4 text-xl">$1</h2>')
+                // Bold
+                .replace(/\*\*(.+?)\*\*/g, '<strong class="text-coral-400">$1</strong>')
+                // Italic
+                .replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>')
+                // Code
+                .replace(/`(.+?)`/g, '<code class="bg-dark-700 px-1.5 py-0.5 rounded text-coral-300 text-xs">$1</code>')
+                // Bullet lists
+                .replace(/^- (.+)$/gm, '<li class="text-gray-300 ml-4 mb-1 flex items-start"><span class="text-coral-500 mr-2 mt-1.5 text-xs">●</span><span>$1</span></li>')
+                // Numbered lists
+                .replace(/^\d+\. (.+)$/gm, '<li class="text-gray-300 ml-4 mb-1 flex items-start"><span class="text-coral-500 mr-2 text-sm">$&</span></li>')
+                // Paragraphs (must be last)
+                .replace(/\n\n/g, '</p><p class="text-gray-300 mb-3">')
+                .replace(/^(.+)$/gm, function(match) {
+                    if (match.startsWith('<')) return match;
+                    return '<p class="text-gray-300 mb-3">' + match + '</p>';
+                });
+        }
+
+        // ==================== TABLES ====================
+        function renderComparison(data, meta) {
+            const container = document.getElementById('comparison-container');
+            let qViewer = renderQueryViewer('comparison', meta);
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = qViewer + '<p class="text-gray-500 text-sm text-center py-4 italic">Enter a "Compare With" repo to see side-by-side commit analysis.</p>';
+                return;
+            }
+            
+            let html = qViewer;
+            html += '<table class="w-full text-xs text-left"><thead><tr class="text-gray-500 border-b border-white/5">';
+            html += '<th class="py-2 px-2">Repo</th>';
+            html += '<th class="py-2 px-2">SHA</th>';
+            html += '<th class="py-2 px-2">Commit</th>';
+            html += '<th class="py-2 px-2">Author</th></tr></thead><tbody>';
+            
+            data.forEach(item => {
+                html += `<tr class="border-b border-white/3 hover:bg-white/2">
+                    <td class="py-2 px-2"><span class="px-2 py-0.5 rounded bg-coral-500/10 text-coral-400 font-bold">${escapeHtml(item.repository)}</span></td>
+                    <td class="py-2 px-2 text-gray-500 font-mono">${(item.sha || 'N/A').substring(0, 7)}</td>
+                    <td class="py-2 px-2 text-gray-200">${escapeHtml(item.msg)}</td>
+                    <td class="py-2 px-2 text-gray-500">${escapeHtml(item.actor)}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderSentryTable(issues, meta) {
+            const container = document.getElementById('sentry-table');
+            let qViewer = renderQueryViewer('sentry_issues', meta);
+            
+            if (!issues || issues.length === 0) {
+                container.innerHTML = qViewer + '<p class="text-gray-500 text-sm text-center py-4">No Sentry issues found</p>';
+                return;
+            }
+            
+            let html = qViewer;
+            html += '<table class="w-full text-xs"><thead><tr class="text-gray-500 border-b border-white/5">';
+            html += '<th class="text-left py-2 px-2">Level</th>';
+            html += '<th class="text-left py-2 px-2">Title</th>';
+            html += '<th class="text-left py-2 px-2">Project</th>';
+            html += '<th class="text-left py-2 px-2">Status</th></tr></thead><tbody>';
+            
+            issues.forEach(issue => {
+                const level = issue.level || 'unknown';
+                const levelColor = level === 'fatal' ? 'text-red-400' : level === 'error' ? 'text-orange-400' : 'text-yellow-400';
+                html += `<tr class="border-b border-white/3 hover:bg-white/2">
+                    <td class="py-2 px-2 ${levelColor} font-semibold uppercase">${level}</td>
+                    <td class="py-2 px-2 text-gray-300">${escapeHtml(issue.title || 'N/A')}</td>
+                    <td class="py-2 px-2 text-gray-500 font-mono">${escapeHtml(issue.project || 'N/A')}</td>
+                    <td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs ${issue.status === 'resolved' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">${issue.status || 'unknown'}</span></td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderCommitsTable(commits, meta) {
+            const container = document.getElementById('commits-table');
+            let qViewer = renderQueryViewer('github_commits', meta);
+            
+            if (!commits || commits.length === 0) {
+                container.innerHTML = qViewer + '<p class="text-gray-500 text-sm text-center py-4">No commits found</p>';
+                return;
+            }
+            
+            let html = qViewer;
+            html += '<table class="w-full text-xs"><thead><tr class="text-gray-500 border-b border-white/5">';
+            html += '<th class="text-left py-2 px-2">SHA</th>';
+            html += '<th class="text-left py-2 px-2">Message</th>';
+            html += '<th class="text-left py-2 px-2">Author</th></tr></thead><tbody>';
+            
+            commits.forEach(commit => {
+                html += `<tr class="border-b border-white/3 hover:bg-white/2">
+                    <td class="py-2 px-2 text-coral-400 font-mono">${(commit.sha || 'N/A').substring(0, 7)}</td>
+                    <td class="py-2 px-2 text-gray-300">${escapeHtml((commit.commit_message || 'N/A').substring(0, 50))}</td>
+                    <td class="py-2 px-2 text-gray-500">${escapeHtml(commit.author_login || 'N/A')}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderJoinsTable(joins, meta) {
+            const container = document.getElementById('joins-table');
+            let qViewer = renderQueryViewer('cross_source_joins', meta);
+            
+            if (!joins || joins.length === 0) {
+                container.innerHTML = qViewer + '<div class="text-center py-6"><p class="text-gray-500 text-sm mb-2">No cross-source correlations found</p><p class="text-xs text-gray-600">This happens when no commits temporally overlap with fatal errors</p></div>';
+                return;
+            }
+            
+            let html = qViewer;
+            html += '<table class="w-full text-xs"><thead><tr class="text-gray-500 border-b border-white/5">';
+            html += '<th class="text-left py-2 px-2">Commit</th>';
+            html += '<th class="text-left py-2 px-2">Author</th>';
+            html += '<th class="text-left py-2 px-2">Linked Error</th>';
+            html += '<th class="text-left py-2 px-2">Level</th></tr></thead><tbody>';
+            
+            joins.forEach(join => {
+                html += `<tr class="border-b border-white/3 hover:bg-white/2">
+                    <td class="py-2 px-2 text-coral-400 font-mono">${(join.sha || 'N/A').substring(0, 7)}</td>
+                    <td class="py-2 px-2 text-gray-500">${escapeHtml(join.author_login || 'N/A')}</td>
+                    <td class="py-2 px-2 text-gray-300">${escapeHtml((join.sentry_error || 'N/A').substring(0, 40))}</td>
+                    <td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs bg-red-500/10 text-red-400 font-semibold">${join.level || 'fatal'}</span></td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== TABS ====================
+        function switchTab(tabName) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Show selected
+            const target = document.getElementById(`content-${tabName}`);
+            if (target) target.classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-coral-400', 'border-coral-400', 'bg-coral-400/5');
+                btn.classList.add('text-gray-500', 'border-transparent');
+            });
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-500', 'border-transparent');
+                activeBtn.classList.add('text-coral-400', 'border-coral-400', 'bg-coral-400/5');
+            }
+        }
+    </script>
+</body>
+</html>

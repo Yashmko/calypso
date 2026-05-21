@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.gemini/
+.python-version
+.venv/
+env/
+venv/
+node_modules/
+dist/
+build/
+*.log
