@@ -75,15 +75,15 @@ CALYPSO collapses all of it into **one SQL query and one AI report.**
      │                                               │
      │   coral sql --format json "SELECT ..."        │
      │              │              │                 │
-     │       ┌──────▼──────┐ ┌────▼──────┐          │
-     │       │   GitHub    │ │  Sentry   │          │
-     │       │  · commits  │ │  · issues │          │
-     │       │  · PRs      │ │  · errors │          │
-     │       │  · alerts   │ │  · fatal  │          │
-     │       └──────┬──────┘ └────┬──────┘          │
+     │       ┌──────▼──────┐ ┌────▼──────┐           │
+     │       │   GitHub    │ │  Sentry   │           │
+     │       │  · commits  │ │  · issues │           │
+     │       │  · PRs      │ │  · errors │           │
+     │       │  · alerts   │ │  · fatal  │           │
+     │       └──────┬──────┘ └────┬──────┘           │
      │              │             │                  │
      │              └──────┬──────┘                  │
-     │                     │  JOIN + UNION ALL        │
+     │                     │  JOIN + UNION ALL       │
      │                     ▼                         │
      │             combined evidence                 │
      └─────────────────────┬─────────────────────────┘
