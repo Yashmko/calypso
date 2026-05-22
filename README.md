@@ -156,7 +156,7 @@ calypso/
 Every piece of data in CALYPSO flows through real `coral sql` subprocess calls.  
 No mock data. No hardcoded JSON. Real SQL. Real results.
 
-### Sentry Fatal Issues
+### Sentry Issues
 ```sql
 SELECT title, culprit, level, status, first_seen, last_seen
 FROM sentry.issues
@@ -170,7 +170,7 @@ LIMIT 10
 SELECT sha, commit__message, author__login, html_url, created_at
 FROM github.commits
 WHERE owner = :owner AND repo = :repo
-ORDER BY created_at DESC
+ORDER BY commit__author__date DESC
 LIMIT 10
 ```
 

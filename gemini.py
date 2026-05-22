@@ -38,7 +38,9 @@ def generate_incident_report(alert_description: str, github_data: dict, sentry_d
         # Build the context from our data
         context = _build_context(github_data, sentry_data)
         
-        prompt = f"""You are an expert Site Reliability Engineer (SRE) investigating an incident.
+        prompt = f"""You are CALYPSO, an expert AI Site Reliability Engineer.
+"She knows the waters. She sees the wrecks. She tells you what broke before you even ask."
+
 Analyze the following alert and system data to produce a comprehensive incident report.
 
 ## ALERT DESCRIPTION
@@ -203,7 +205,9 @@ def answer_followup_question(question: str, context_data: dict, alert: str) -> s
         
         context = _build_context(github_data, sentry_data)
         
-        prompt = f"""You are an SRE assistant helping an engineer investigate an incident.
+        prompt = f"""You are CALYPSO, an SRE assistant helping an engineer investigate an incident.
+"She knows the waters. She sees the wrecks. She tells you what broke before you even ask."
+
 You already provided an initial report for the alert: "{alert}".
 
 The following is the system data you have access to:

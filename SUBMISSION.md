@@ -1,7 +1,9 @@
-# Hackathon Submission — SRE Investigator
+# Hackathon Submission — CALYPSO
 
 ## Project Name
-**SRE Investigator**
+**CALYPSO**
+
+> *"She knows the waters. She sees the wrecks. She tells you what broke before you even ask."*
 
 ## Track
 **Track 1 — Enterprise Agent**
@@ -13,15 +15,15 @@ MacBook Neo
 
 ## Elevator Pitch
 
-SRE Investigator is an AI-powered incident analysis tool that uses Coral's SQL-over-API to query GitHub and Sentry data, then sends it to Gemini AI for intelligent root cause analysis — producing a beautiful, actionable incident report in seconds.
+CALYPSO is an AI-powered incident analysis tool that uses Coral's SQL-over-API to query GitHub and Sentry data, then sends it to Gemini AI for intelligent root cause analysis — producing a beautiful, actionable incident report in seconds.
 
-Paste an alert. Get answers. Fix faster.
+She knows the waters. She sees the wrecks. She tells you what broke before you even ask.
 
 ---
 
 ## Problem Statement
 
-Every engineering team faces the same painful scenario: an alert fires at 2 AM, and you're scrambling across GitHub commits, Sentry errors, and PRs trying to figure out what broke and why. SRE Investigator automates this entire investigation pipeline using Coral's cross-source SQL queries and Gemini AI analysis.
+Every engineering team faces the same painful scenario: an alert fires at 2 AM, and you're scrambling across GitHub commits, Sentry errors, and PRs trying to figure out what broke and why. CALYPSO automates this entire investigation pipeline using Coral's cross-source SQL queries and Gemini AI analysis.
 
 ---
 

@@ -8,11 +8,19 @@ import json
 import logging
 import os
 import time
+import re
 
 logger = logging.getLogger(__name__)
 
 # Track query history globally (simple in-memory storage)
 QUERY_HISTORY = []
+
+def sanitize_input(val: str) -> str:
+    """Strip special characters from user input to prevent SQL safety issues."""
+    if not val:
+        return ""
+    # Allow alphanumeric, underscore, hyphen, dot, and space (for keywords)
+    return re.sub(r'[^a-zA-Z0-9\._\-\s/]', '', str(val))
 
 def run_coral_query(sql: str) -> dict:
     """
@@ -87,8 +95,8 @@ def get_source_status() -> dict:
     sentry_check = run_coral_query("SELECT 1 FROM sentry.projects LIMIT 1")
     
     return {
-        "github": len(github_check["data"]) >= 0 if github_check["sql"] else False,
-        "sentry": len(sentry_check["data"]) >= 0 if sentry_check["sql"] else False
+        "github": len(github_check["data"]) > 0,
+        "sentry": len(sentry_check["data"]) > 0
     }
 
 
@@ -106,6 +114,7 @@ def get_recent_sentry_issues(limit: int = 10) -> dict:
 
 def get_recent_github_commits(owner: str, repo: str, limit: int = 10) -> dict:
     """Get recent GitHub commits for a specific repository."""
+    owner, repo = sanitize_input(owner), sanitize_input(repo)
     sql = f"""
     SELECT sha, commit__message as commit_message, author__login as author_login, html_url, commit__author__date as created_at
     FROM github.commits
@@ -118,6 +127,7 @@ def get_recent_github_commits(owner: str, repo: str, limit: int = 10) -> dict:
 
 def search_github_commits(owner: str, repo: str, keyword: str, limit: int = 10) -> dict:
     """Search for commits matching a specific keyword."""
+    owner, repo, keyword = sanitize_input(owner), sanitize_input(repo), sanitize_input(keyword)
     sql = f"""
     SELECT sha, commit__message as commit_message, author__login as author_login, html_url, commit__author__date as created_at
     FROM github.commits
@@ -131,6 +141,7 @@ def search_github_commits(owner: str, repo: str, keyword: str, limit: int = 10) 
 
 def get_github_security_alerts(org: str, limit: int = 10) -> dict:
     """Get open GitHub security alerts for an organization."""
+    org = sanitize_input(org)
     sql = f"""
     SELECT number, security_advisory__summary as title, state, severity, created_at
     FROM github.alerts
@@ -142,6 +153,7 @@ def get_github_security_alerts(org: str, limit: int = 10) -> dict:
 
 def get_open_pull_requests(owner: str, repo: str, limit: int = 5) -> dict:
     """Get open GitHub pull requests for a specific repository."""
+    owner, repo = sanitize_input(owner), sanitize_input(repo)
     sql = f"""
     SELECT number, title, state, user__login as user_login, created_at
     FROM github.pulls
@@ -154,6 +166,7 @@ def get_open_pull_requests(owner: str, repo: str, limit: int = 5) -> dict:
 
 def get_cross_source_join(owner: str, repo: str, limit: int = 10) -> dict:
     """Cross-source JOIN between GitHub commits and Sentry issues."""
+    owner, repo = sanitize_input(owner), sanitize_input(repo)
     sql = f"""
     SELECT 
         c.sha, 
@@ -172,6 +185,7 @@ def get_cross_source_join(owner: str, repo: str, limit: int = 10) -> dict:
 
 def get_incident_timeline(owner: str, repo: str, limit: int = 20) -> dict:
     """Unified timeline of commits and errors using UNION ALL."""
+    owner, repo = sanitize_input(owner), sanitize_input(repo)
     sql = f"""
     SELECT 'commit' as type, commit__author__date as ts, commit__message as msg, author__login as actor
     FROM github.commits
@@ -196,10 +210,11 @@ def get_multi_repo_comparison(repos: list, limit: int = 10) -> dict:
         
     parts = []
     for r in repos:
+        owner, repo = sanitize_input(r['owner']), sanitize_input(r['repo'])
         parts.append(f"""
-            SELECT '{r['repo']}' as repository, sha, commit__message as msg, author__login as actor, commit__author__date as ts
+            SELECT '{repo}' as repository, sha, commit__message as msg, author__login as actor, commit__author__date as ts
             FROM github.commits
-            WHERE owner = '{r['owner']}' AND repo = '{r['repo']}'
+            WHERE owner = '{owner}' AND repo = '{repo}'
         """)
         
     sql = " UNION ALL ".join(parts) + f" ORDER BY ts DESC LIMIT {limit}"

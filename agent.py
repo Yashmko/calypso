@@ -1,6 +1,6 @@
 """
-SRE Investigator - Main Orchestrator
-Coordinates data collection from Coral and AI analysis from Gemini to produce incident reports.
+CALYPSO - Main Orchestrator
+"She knows the waters. She sees the wrecks. She tells you what broke before you even ask."
 """
 
 import logging
@@ -21,11 +21,14 @@ from report import format_report
 logger = logging.getLogger(__name__)
 
 
-def investigate(alert_description: str, repo_full_name: str = "Yashmko/Auditflow", compare_repo: str = None) -> dict:
+def investigate(alert_description: str, repo_full_name: str = "", compare_repo: str = None) -> dict:
     """
     Main investigation orchestrator with optional multi-repo comparison.
     """
     logger.info(f"Starting investigation for: {alert_description[:60]}...")
+    
+    if not repo_full_name:
+        raise ValueError("GitHub repository (owner/repo) is required.")
     
     try:
         # 1. Parse Primary Repo
@@ -145,5 +148,5 @@ def _extract_keywords(text: str) -> list:
 
 
 if __name__ == "__main__":
-    res = investigate("Test", "Yashmko/Auditflow")
+    res = investigate("Test", "")
     print(f"Meta keys: {res['queries_meta'].keys()}")

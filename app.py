@@ -1,6 +1,6 @@
 """
-SRE Investigator - Flask Web Server
-Serves the dark-themed UI and handles investigation API requests.
+CALYPSO - Flask Web Server
+"She knows the waters. She sees the wrecks. She tells you what broke before you even ask."
 """
 
 import os
@@ -42,8 +42,13 @@ def run_investigation():
             }), 400
         
         alert_description = data["alert"].strip()
-        repo_full_name = data.get("repo", "Yashmko/Auditflow").strip()
+        repo_full_name = data.get("repo", "").strip()
         compare_repo = data.get("compare_repo", "").strip() or None
+        
+        if not repo_full_name:
+            return jsonify({
+                "error": "Missing 'repo' field in request body. Please provide a repository in 'owner/repo' format."
+            }), 400
         
         if not alert_description:
             return jsonify({
