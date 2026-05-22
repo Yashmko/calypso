@@ -1,122 +1,162 @@
-# SRE Investigator ⚡
-
-> **Pirates of the Coral-bean Hackathon** | WeMakeDevs | Track 1: Enterprise Agent
-
-**SRE Investigator** is an AI-powered incident analysis tool that queries your GitHub and Sentry data via [Coral](https://www.wemakedevs.org/hackathons/coral) (SQL-over-API), sends it to Google's Gemini AI for intelligent analysis, and produces a beautiful, actionable incident report.
-
----
-
-## The Story
-
-I built this on a **2GB RAM Arch Linux laptop** — no fancy hardware, no expensive cloud services. Just Coral, Python, and Gemini's free tier. If it works on my machine, it works anywhere. That's the point of Coral.
-
----
-
-## What It Does
-
-1. **You paste an alert** — "Database timeout errors in production API"
-2. **Coral queries your data sources** via SQL:
-   - Recent Sentry issues (fatal/error)
-   - Recent GitHub commits
-   - Open security alerts
-   - Open pull requests
-   - **Cross-source JOIN** between GitHub commits and Sentry fatal errors
-3. **Gemini AI analyzes everything** — correlating commits with errors to find root cause
-4. **Beautiful incident report** — structured analysis with actionable recommendations
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Backend | Python 3, Flask |
-| AI Analysis | Google Gemini 1.5 Flash (free tier) |
-| Data Layer | Coral CLI (SQL over GitHub + Sentry APIs) |
-| Frontend | Vanilla HTML + JS + Tailwind CSS (CDN) |
-| RAM Usage | < 150MB |
-
----
-
-## Features
-
-- **Real Coral SQL queries** — Every query runs actual `coral query --json` commands
-- **Cross-source JOINs** — Demonstrates Coral's killer feature: `JOIN github.commits c ON sentry.issues s`
-- **AI-powered analysis** — Gemini correlates commits with errors to identify root cause
-- **Beautiful dark UI** — Glassmorphism, animations, typewriter SQL terminal
-- **Responsive** — Works on mobile, tablet, and desktop
-- **Zero npm** — Pure vanilla JS + Tailwind CDN for maximum portability
-- **Lightweight** — Runs comfortably on 2GB RAM
-
----
-
-## Project Structure
+<div align="center">
 
 ```
-sre-investigator/
+ ██████╗ █████╗ ██╗  ██╗   ██╗██████╗ ███████╗ ██████╗ 
+██╔════╝██╔══██╗██║  ╚██╗ ██╔╝██╔══██╗██╔════╝██╔═══██╗
+██║     ███████║██║   ╚████╔╝ ██████╔╝███████╗██║   ██║
+██║     ██╔══██║██║    ╚██╔╝  ██╔═══╝ ╚════██║██║   ██║
+╚██████╗██║  ██║███████╗██║   ██║     ███████║╚██████╔╝
+ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝     ╚══════╝ ╚═════╝ 
+```
+
+*She knows the waters. She sees the wrecks.*  
+*She tells you what broke before you even ask.*
+
+<br/>
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-2.x-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Coral](https://img.shields.io/badge/Powered_by-Coral_SQL-FF6B4A?style=for-the-badge)
+![Gemini](https://img.shields.io/badge/Gemini-1.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Track](https://img.shields.io/badge/Track_1-Enterprise_Agent_🏴‍☠️-gold?style=for-the-badge)
+![RAM](https://img.shields.io/badge/Runs_on-2GB_RAM-success?style=for-the-badge)
+
+<br/>
+
+> **Built for the [Pirates of the Coral-bean Hackathon](https://www.wemakedevs.org/hackathons/coral) by WeMakeDevs**  
+> Track 1 · Enterprise Agent · MacBook Neo Target 🎯
+
+</div>
+
+---
+
+## 🌊 The Problem
+
+When production breaks at 3am, engineers open **5 different tabs**:
+
+```
+GitHub    →  what was just deployed?
+Sentry    →  what errors are firing?
+Slack     →  what did the team say?
+Datadog   →  what do the metrics say?
+Brain     →  what do I actually do now?
+```
+
+That context-switching costs **precious minutes** during an incident.  
+CALYPSO collapses all of it into **one SQL query and one AI report.**
+
+---
+
+## ⚡ How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        CALYPSO                              │
+│                                                             │
+│  1. You paste an alert description                          │
+│  2. Coral queries GitHub + Sentry via real SQL              │
+│  3. Gemini AI correlates commits with errors                │
+│  4. You get a full incident report in ~30 seconds           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Full Data Flow
+
+```
+  Alert Description (user input)
+           │
+           ▼
+     ┌──────────┐
+     │ agent.py │  ← orchestrates everything
+     └────┬─────┘
+          │
+     ┌────▼──────────────────────────────────────────┐
+     │              queries.py                       │
+     │                                               │
+     │   coral sql --format json "SELECT ..."        │
+     │              │              │                 │
+     │       ┌──────▼──────┐ ┌────▼──────┐          │
+     │       │   GitHub    │ │  Sentry   │          │
+     │       │  · commits  │ │  · issues │          │
+     │       │  · PRs      │ │  · errors │          │
+     │       │  · alerts   │ │  · fatal  │          │
+     │       └──────┬──────┘ └────┬──────┘          │
+     │              │             │                  │
+     │              └──────┬──────┘                  │
+     │                     │  JOIN + UNION ALL        │
+     │                     ▼                         │
+     │             combined evidence                 │
+     └─────────────────────┬─────────────────────────┘
+                           │
+                    ┌──────▼───────┐
+                    │  gemini.py   │  ← AI analysis
+                    │              │
+                    │  Prompt →    │
+                    │  Gemini API  │
+                    └──────┬───────┘
+                           │
+                    ┌──────▼───────┐
+                    │  report.py   │  ← format & structure
+                    └──────┬───────┘
+                           │
+                           ▼
+               ┌───────────────────────┐
+               │   Incident Report     │
+               │  · Summary            │
+               │  · Root Cause         │
+               │  · Affected Systems   │
+               │  · Action Plan        │
+               │  · Prevention         │
+               └───────────────────────┘
+```
+
+---
+
+## ✨ Features
+
+| Feature | What It Does | Coral Superpower Used |
+|---|---|---|
+| 🔍 **Incident Investigator** | Full AI report from one alert | Parallel queries across sources |
+| 🕒 **Evidence Timeline** | Commits + errors in one stream | `UNION ALL` across GitHub + Sentry |
+| ⚔️ **Multi-Repo Comparison** | Compare two repos side by side | Cross-repo `UNION ALL` query |
+| 👁️ **Query Viewer** | See exact SQL + execution time | Full Coral transparency |
+| 📜 **Live Query History** | Terminal of last 5 SQL executions | Real-time Coral telemetry |
+| 🟢 **Source Status Badges** | Live GitHub + Sentry ping on load | Lightweight health-check queries |
+| 💬 **Follow-up Chat** | Ask the agent follow-up questions | Contextual AI over Coral results |
+| 🛠️ **Create Fix Issue** | One-click GitHub Issue from report | Closes the investigation loop |
+
+---
+
+## 🗂️ Project Structure
+
+```
+calypso/
 │
-├── queries.py          # Coral SQL query runner (subprocess)
-├── agent.py            # Main orchestrator
-├── gemini.py           # Gemini API integration
-├── report.py           # Report formatter
-├── app.py              # Flask web server
+├── 🧠  agent.py              # Main orchestrator
+├── 🔌  queries.py            # All Coral SQL (real subprocess calls)
+├── 🤖  gemini.py             # Gemini 1.5 Flash integration
+├── 📋  report.py             # JSON report formatter
+├── 🌐  app.py                # Flask server (port 5000)
 │
 ├── templates/
-│   └── index.html      # Dark-themed UI (Tailwind CDN)
+│   └── 🎨  index.html        # Dark UI — Tailwind CDN, vanilla JS
 │
-├── requirements.txt    # Python dependencies
-├── .env.example        # Environment variable template
-├── README.md           # This file
-└── SUBMISSION.md       # Hackathon submission text
+├── .env                      # Your secrets (never committed)
+├── .env.example              # Template for others
+├── .gitignore                # Keeps .env safe
+├── requirements.txt          # flask, google-generativeai, python-dotenv
+├── README.md                 # You are here
+└── SUBMISSION.md             # Hackathon submission copy
 ```
 
 ---
 
-## Quick Start
+## 🔥 The Coral SQL
 
-### Prerequisites
+Every piece of data in CALYPSO flows through real `coral sql` subprocess calls.  
+No mock data. No hardcoded JSON. Real SQL. Real results.
 
-- Python 3.8+
-- Coral CLI installed and configured (`coral` command available)
-- GitHub and Sentry sources connected in Coral
-- Gemini API key (free tier)
-
-### Install
-
-```bash
-# Clone or copy the project
-cd sre-investigator
-
-# Install dependencies
-pip install -r requirements.txt --break-system-packages
-
-# Set up environment
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
-# Run the server
-python app.py
-```
-
-### Access
-
-Open your browser and go to **http://localhost:5000**
-
----
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | Yes | Google Gemini API key (free tier) |
-
-Get your key at: https://aistudio.google.com/app/apikey
-
----
-
-## Coral SQL Queries Used
-
-### Sentry Issues
+### Sentry Fatal Issues
 ```sql
 SELECT title, culprit, level, status, first_seen, last_seen
 FROM sentry.issues
@@ -125,43 +165,137 @@ ORDER BY last_seen DESC
 LIMIT 10
 ```
 
-### GitHub Commits
+### Recent GitHub Commits
 ```sql
-SELECT sha, commit_message, author_login, html_url, created_at
+SELECT sha, commit__message, author__login, html_url, created_at
 FROM github.commits
+WHERE owner = :owner AND repo = :repo
 ORDER BY created_at DESC
 LIMIT 10
 ```
 
-### Cross-Source JOIN (Showcase)
+### 🏆 Cross-Source JOIN — The Money Shot
 ```sql
-SELECT c.sha, c.commit_message, c.author_login,
-       s.title as sentry_error, s.level
+SELECT
+    c.sha,
+    c.commit__message,
+    c.author__login,
+    s.title      AS sentry_error,
+    s.level      AS severity,
+    s.first_seen AS error_time,
+    c.created_at AS commit_time
 FROM github.commits c
-JOIN sentry.issues s ON s.first_seen >= c.created_at
+JOIN sentry.issues s
+  ON s.first_seen >= c.created_at
 WHERE s.level = 'fatal'
 ORDER BY s.first_seen DESC
 LIMIT 10
 ```
 
+### Evidence Timeline — UNION ALL
+```sql
+SELECT 'commit' AS type, sha    AS id, commit__message AS message, created_at  AS ts
+FROM github.commits
+WHERE owner = :owner AND repo = :repo
+
+UNION ALL
+
+SELECT 'error'  AS type, id,          title           AS message, first_seen   AS ts
+FROM sentry.issues
+WHERE level IN ('error', 'fatal')
+
+ORDER BY ts DESC
+LIMIT 20
+```
+
 ---
 
-## API Endpoint
+## 🚀 Quick Start
 
-### POST `/investigate`
+### Prerequisites
 
-Request:
+- Python 3.8+
+- [Coral CLI](https://withcoral.com) installed
+- GitHub source connected → `coral source add --interactive github`
+- Sentry source connected → `coral source add --interactive sentry`
+- Gemini API key → [aistudio.google.com](https://aistudio.google.com) (free, no credit card)
+
+### Install & Run
+
+```bash
+# Clone
+git clone https://github.com/Yashmko/calypso.git
+cd calypso
+
+# Install
+pip install -r requirements.txt --break-system-packages
+
+# Configure
+cp .env.example .env
+nano .env   # add your GEMINI_API_KEY
+
+# Launch
+python app.py
+
+# Open
+# http://localhost:5000
+```
+
+### Environment Variables
+
+| Variable | Required | Where to Get |
+|---|---|---|
+| `GEMINI_API_KEY` | ✅ Yes | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+
+---
+
+## 🎮 Using CALYPSO
+
+```
+Step 1 → Open http://localhost:5000
+Step 2 → Enter your GitHub repo (owner/repo)
+Step 3 → Optionally enter a second repo for comparison
+Step 4 → Paste your alert or incident description
+Step 5 → Hit Investigate (or Ctrl+Enter)
+Step 6 → Read the 5-section incident report
+Step 7 → Click "View Coral Query" to see live SQL
+Step 8 → Ask follow-up questions in the chat
+Step 9 → Click "Create Fix Issue" to log it in GitHub
+```
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| Query Engine | Coral CLI | SQL over GitHub + Sentry, no ETL |
+| AI | Gemini 1.5 Flash | Free tier, fast, excellent reasoning |
+| Backend | Python + Flask | Lightweight, 2GB RAM friendly |
+| Frontend | HTML + Tailwind CDN + Vanilla JS | Zero npm, zero build step |
+| OS | Arch Linux | Because we don't need more |
+
+---
+
+## 📊 API Reference
+
+### `POST /investigate`
+
+**Request:**
 ```json
 {
-  "alert": "Database timeout errors in production API"
+  "alert": "Database timeout errors spiking in production API",
+  "owner": "your-org",
+  "repo": "your-repo",
+  "compare_repo": "your-org/other-repo"
 }
 ```
 
-Response:
+**Response:**
 ```json
 {
-  "timestamp": "2024-01-15T10:30:00+00:00",
-  "ai_analysis": "## Incident Summary...",
+  "timestamp": "2026-05-25T03:00:00+00:00",
+  "ai_analysis": "## Incident Summary\n...",
   "stats": {
     "sentry_issues_found": 8,
     "github_commits_analyzed": 10,
@@ -169,39 +303,62 @@ Response:
     "open_prs_found": 3,
     "cross_source_correlations": 4
   },
-  "raw_data": { ... }
+  "query_log": [
+    {
+      "sql": "SELECT title FROM sentry.issues ...",
+      "duration_ms": 312
+    }
+  ],
+  "raw_data": {}
+}
+```
+
+### `GET /status`
+Returns live Coral source connectivity for the header badges.
+
+```json
+{
+  "github": "connected",
+  "sentry": "connected"
 }
 ```
 
 ---
 
-## Why This Project Wins
+## 🏆 Why CALYPSO Wins
 
-| Criteria | How We Deliver |
-|----------|---------------|
-| **Real Problem** | Every engineering team struggles with incident investigation |
-| **Coral Power** | 4+ data sources with actual cross-source SQL JOINs |
-| **AI Integration** | Gemini correlates commits with errors for root cause analysis |
-| **Visual Impact** | Dark theme, glassmorphism, animations — judges remember it |
-| **Lightweight** | Runs on 2GB RAM, no heavy frameworks |
-| **Judging Optimization** | Directly targets 5/6 judging criteria |
-
----
-
-## Hackathon Details
-
-- **Event**: Pirates of the Coral-bean Hackathon by WeMakeDevs
-- **Track**: Track 1 — Enterprise Agent
-- **Prize Target**: MacBook Neo
-- **Dates**: May 25 – May 31, 2026
-- **Hackathon Page**: https://www.wemakedevs.org/hackathons/coral
+| Judging Criterion | What CALYPSO Delivers |
+|---|---|
+| 🎯 **Impact** | Solves on-call incident investigation — every eng team's pain |
+| 🧠 **Creativity** | Named after a sea goddess, fits pirate theme, cross-source SQL joins |
+| ⚙️ **Technical Depth** | Real subprocess Coral calls, UNION ALL, JOIN, live telemetry |
+| 🎨 **Aesthetics** | Glassmorphism dark UI, typewriter SQL terminal, smooth animations |
+| 🔗 **Best Use of Coral** | Query viewer, live history, source badges — Coral is the star |
+| 📈 **Learning Curve** | Solo, 2GB RAM, Arch Linux, all free tools — built it anyway |
 
 ---
 
-## License
+## 🧑‍💻 The Builder
 
-MIT — Built with Coral, powered by Gemini.
+Built solo by **[@Yashmko](https://github.com/Yashmko)** on a **2GB RAM Arch Linux laptop.**
+
+No paid subscriptions. No cloud services. No team.  
+Just Coral, Python, and stubbornness.
+
+> *"If it runs on my machine, it runs anywhere. That's the point of Coral."*
 
 ---
 
-> ⚡ *"If it works on 2GB RAM, it works anywhere."*
+## 📄 License
+
+MIT — use it, fork it, ship it.
+
+---
+
+<div align="center">
+
+🏴‍☠️ **CALYPSO** · Built for the Pirates of the Coral-bean Hackathon · WeMakeDevs · May 2026
+
+*She knows the waters. She sees the wrecks. She tells you what broke before you even ask.*
+
+</div>
