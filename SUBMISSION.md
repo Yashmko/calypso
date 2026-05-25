@@ -38,8 +38,11 @@ A lightweight Flask web app with a stunning dark UI that:
    - GitHub security alerts
    - Open pull requests
 3. Executes a **cross-source SQL JOIN** between GitHub commits and Sentry fatal errors — Coral's most powerful feature
-4. Sends all data to **Gemini 1.5 Flash** for AI-powered root cause analysis
-5. Displays a **beautiful incident report** with summary, root cause, affected components, recommended actions, and prevention strategies
+4. Generates a **Unified Incident Timeline** using `UNION ALL` to show exactly when things broke relative to deployments
+5. Calculates an **Evidence Confidence Score (0-100)** based on source variety and correlation strength
+6. Sends all data to **Gemini 1.5 Flash** for strictly structured AI-powered root cause analysis
+7. Displays a **beautiful incident report** with summary, root cause, affected components, recommended actions, and prevention strategies
+8. Includes **interactive follow-up chat** to query the investigation data further
 
 **Key Technical Achievement**: The cross-source JOIN query correlates recent GitHub commits with Sentry fatal errors by temporal overlap, enabling AI to pinpoint which commit likely introduced the bug.
 

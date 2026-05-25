@@ -50,28 +50,31 @@ Analyze the following alert and system data to produce a comprehensive incident 
 {context}
 
 ## YOUR TASK
-Generate a detailed incident report with the following sections. Use markdown formatting.
+Generate a detailed incident report with the following EXACT sections. Use markdown headers (##).
 
-### 1. Incident Summary
+## Incident Summary
 Provide a concise 2-3 sentence summary of what happened and its potential impact.
 
-### 2. Likely Root Cause
+## Root Cause
 Based on the correlation between recent commits and errors, identify the most probable root cause.
 Be specific about which commit or change likely introduced the issue.
 
-### 3. Affected Components
+## Affected Components
 List the specific services, endpoints, or components that are affected.
 
-### 4. Recommended Actions
+## Recommended Actions
 Provide a numbered, step-by-step action plan to resolve the incident.
 Include immediate mitigation steps and longer-term fixes.
 
-### 5. Prevention
+## Prevention Plan
 Suggest concrete measures to prevent this type of incident in the future.
 Consider code review practices, testing, monitoring, and deployment strategies.
 
-Format your response in clean markdown with clear headings and bullet points.
-Be thorough but concise. Focus on actionable insights.
+## Confidence Score
+Assign a confidence score: [Low / Medium / High]
+Provide a short (1 sentence) explanation for why this score was chosen based on the evidence available.
+
+Format your response in clean markdown. Be thorough but concise. Focus on actionable insights.
 """
 
         response = MODEL.generate_content(prompt)
@@ -160,28 +163,30 @@ def _build_context(github_data: dict, sentry_data: dict) -> str:
 
 def _generate_fallback_report(alert_description: str) -> str:
     """Generate a basic fallback report when Gemini API fails."""
-    return f"""## Incident Report (Fallback Mode)
-
-### 1. Incident Summary
+    return f"""## Incident Summary
 Investigating alert: "{alert_description}". The system detected an anomaly that requires immediate attention.
 
-### 2. Likely Root Cause
+## Root Cause
 **[AI Analysis Failed]** Unable to determine root cause due to Gemini AI service unavailability. Please review the RAW EVIDENCE tab and logs manually.
 
-### 3. Affected Components
+## Affected Components
 - Primary service (investigating)
 
-### 4. Recommended Actions
+## Recommended Actions
 1. Check service health dashboards
 2. Review recent deployment logs
 3. Verify database connectivity
 4. Check downstream service dependencies
 5. Escalate to on-call engineer if unresolved
 
-### 5. Prevention
+## Prevention Plan
 - Implement proper error handling
 - Add health check endpoints
 - Review deployment procedures
+
+## Confidence Score
+Low
+AI service is currently unavailable.
 """
 
 

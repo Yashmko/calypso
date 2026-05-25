@@ -28,6 +28,51 @@
 
 </div>
 
+
+---
+
+## 🏗️ Architecture
+
+```text
+                                  ┌─────────────────┐
+                                  │      USER       │
+                                  └────────┬────────┘
+                                           │
+                                  ┌────────▼────────┐
+                                  │   Flask Web UI  │
+                                  └────────┬────────┘
+                                           │
+                                  ┌────────▼────────┐
+                                  │    agent.py     │
+                                  └────┬──────┬─────┘
+                                       │      │
+            ┌──────────────────────────┘      └──────────────────────────┐
+            │                                                            │
+    ┌───────▼───────┐                                            ┌───────▼───────┐
+    │   queries.py  │                                            │   gemini.py   │
+    └───────┬───────┘                                            └───────┬───────┘
+            │                                                            │
+    ┌───────▼───────┐                                            ┌───────▼───────┐
+    │     CORAL     │                                            │   Gemini API  │
+    └────┬──────┬───┘                                            └───────────────┘
+         │      │
+    ┌────▼───┐  └────▼─────┐
+    │ GitHub │       │ Sentry   │
+    └────────┘       └──────────┘
+```
+
+---
+
+## 💎 Why CALYPSO Wins
+CALYPSO isn't just another dashboard; it's a reasoning engine built for the heat of production incidents.
+
+- **🚢 Cross-Source Investigation**: The only tool that joins Sentry's fatal errors with GitHub's commit stream using standard SQL.
+- **🧠 AI Reasoning**: Powered by Google's Gemini Flash, CALYPSO doesn't just show data—it analyzes correlations to suggest specific root causes.
+- **🛰️ Telemetry First**: Every investigation shows you the exact Coral SQL queries executed, bringing transparency to AI actions.
+- **💾 Persistence**: Built-in SQLite database tracks all past investigations for easy post-mortem reviews.
+- **📢 Slack Integration**: Instant report sharing to keep the entire team in the loop.
+- **☁️ Docker Ready**: Fully containerized and optimized to run on a lightweight 2GB RAM instance.
+
 ---
 
 ## 🌊 The Problem
@@ -58,6 +103,41 @@ CALYPSO collapses all of it into **one SQL query and one AI report.**
 │  3. Gemini AI correlates commits with errors                │
 │  4. You get a full incident report in ~30 seconds           │
 └─────────────────────────────────────────────────────────────┘
+```
+
+### ⚡ How Coral Powers CALYPSO
+CALYPSO uses **Coral's SQL interface** to query multiple data sources as if they were local tables. Here are the real queries driving our analysis:
+
+#### 1. The Cross-Source Join (The "Aha!" Moment)
+We join GitHub commits with Sentry issues based on temporal overlap:
+```sql
+SELECT c.sha, c.commit__message, s.title as sentry_error
+FROM github.commits c
+JOIN sentry.issues s ON s.first_seen >= c.commit__author__date
+WHERE c.owner = 'Yashmko' AND c.repo = 'calypso' AND s.level = 'fatal'
+ORDER BY s.first_seen DESC LIMIT 10;
+```
+
+#### 2. The Unified Incident Timeline
+We use `UNION ALL` to create a chronological stream of disparate events:
+```sql
+SELECT 'commit' as type, commit__author__date as ts, commit__message as msg
+FROM github.commits
+UNION ALL
+SELECT 'error' as type, first_seen as ts, title as msg
+FROM sentry.issues
+ORDER BY ts DESC LIMIT 20;
+```
+
+#### 3. Multi-Repo Comparison
+Comparing health across different services during a global outage:
+```sql
+SELECT 'repo-a' as repository, sha, commit__message as msg, commit__author__date as ts
+FROM github.commits WHERE owner = 'org' AND repo = 'repo-a'
+UNION ALL
+SELECT 'repo-b' as repository, sha, commit__message as msg, commit__author__date as ts
+FROM github.commits WHERE owner = 'org' AND repo = 'repo-b'
+ORDER BY ts DESC LIMIT 10;
 ```
 
 ### Full Data Flow

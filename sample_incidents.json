@@ -1,0 +1,17 @@
+[
+    {
+        "title": "API 500 Error Spike",
+        "repo": "Yashmko/calypso",
+        "alert": "Sudden spike in HTTP 500 errors on /api/v1/auth endpoint. Latency has increased from 200ms to 4.5s. Affecting 15% of users globally. Correlates with recent middleware changes."
+    },
+    {
+        "title": "Worker OOM Memory Leak",
+        "repo": "Yashmko/calypso",
+        "alert": "Background worker service 'billing-processor' is failing with OOM (Out of Memory) kills. Memory usage climbs linearly until crash. Possibly related to new batch processing logic introduced in the last 24 hours."
+    },
+    {
+        "title": "Failed Deploy Rollback",
+        "repo": "Yashmko/calypso",
+        "alert": "Multiple fatal exceptions detected immediately after deployment v2.4.1. Sentry is showing 'AttributeError' in user profile loading. Requires immediate investigation to determine if rollback is needed or if it is a transient DB issue."
+    }
+]

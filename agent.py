@@ -112,19 +112,55 @@ def investigate(alert_description: str, repo_full_name: str = "", compare_repo: 
             "security_alerts": security_alerts,
             "open_prs": open_prs,
             "cross_source_joins": cross_source_joins,
-            "timeline": timeline,
+            "timeline": sorted(timeline, key=lambda x: x.get("ts", ""), reverse=True),
             "comparison": comparison_data
         }
+        
+        # Calculate Evidence Confidence Score (0-100)
+        evidence_score = _calculate_evidence_score(raw_data)
         
         report = format_report(ai_analysis, raw_data)
         report["queries_meta"] = queries_meta
         report["live_history"] = list(reversed(QUERY_HISTORY[-5:]))
+        report["evidence_score"] = evidence_score
         
         return report
         
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
         return format_report(f"## Error\n{str(e)}", {})
+
+
+def _calculate_evidence_score(raw_data: dict) -> int:
+    """Calculate a 0-100 score based on evidence quality."""
+    score = 0
+    
+    # successful sources (max 40)
+    sources = ["sentry_issues", "github_commits", "security_alerts", "open_prs"]
+    for s in sources:
+        if raw_data.get(s):
+            score += 10
+            
+    # correlations (max 30)
+    joins = raw_data.get("cross_source_joins", [])
+    if len(joins) >= 3:
+        score += 30
+    elif len(joins) > 0:
+        score += 15
+        
+    # amount of evidence (max 20)
+    total_items = sum(len(raw_data.get(s, [])) for s in sources)
+    if total_items >= 15:
+        score += 20
+    elif total_items >= 5:
+        score += 10
+        
+    # severity indicators (max 10)
+    fatal_errors = [i for i in raw_data.get("sentry_issues", []) if i.get("level") == "fatal"]
+    if fatal_errors:
+        score += 10
+        
+    return min(100, score)
 
 
 def chat_followup(question: str, context_data: dict, alert: str) -> str:

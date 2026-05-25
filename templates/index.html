@@ -95,6 +95,26 @@
             mask-composite: exclude;
             pointer-events: none;
         }
+
+        .loading-glow {
+            position: relative;
+        }
+        .loading-glow::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            background: linear-gradient(135deg, #ff8c6b, #ff6b4a, #ed4c2c);
+            filter: blur(20px);
+            opacity: 0.4;
+            z-index: -1;
+            border-radius: 2rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.02); }
+        }
         
         /* Terminal */
         .terminal {
@@ -363,7 +383,17 @@
                     </div>
                     
                     <!-- Input Card -->
-                    <div class="glass rounded-2xl p-6 gradient-border fade-in" style="animation-delay: 0.2s">
+                    <div id="input-card" class="glass rounded-2xl p-6 gradient-border fade-in" style="animation-delay: 0.2s">
+                        <div class="mb-6">
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Demo Scenarios</h4>
+                            <div id="sample-buttons" class="flex flex-wrap gap-2">
+                                <!-- Samples populated by JS -->
+                                <div class="animate-pulse w-24 h-8 bg-white/5 rounded-lg"></div>
+                                <div class="animate-pulse w-24 h-8 bg-white/5 rounded-lg"></div>
+                                <div class="animate-pulse w-24 h-8 bg-white/5 rounded-lg"></div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                             <div>
                                 <label for="repo-input" class="block text-sm font-semibold text-white mb-2">
@@ -482,28 +512,47 @@
                                 <div class="text-2xl font-bold text-coral-400" id="stat-alerts">0</div>
                                 <div class="text-xs text-gray-400 mt-1">Security Alerts</div>
                             </div>
-                            <div class="stat-badge rounded-xl p-3 text-center">
-                                <div class="text-2xl font-bold text-coral-400" id="stat-correlations">0</div>
-                                <div class="text-xs text-gray-400 mt-1">Correlations</div>
+                            <div class="stat-badge rounded-xl p-3 text-center flex flex-col justify-center">
+                                <div class="text-lg font-bold" id="stat-evidence-score">
+                                    <span id="evidence-score-val">0</span><span class="text-[10px] text-gray-600">/100</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400 uppercase tracking-tighter">Evidence Quality</div>
                             </div>
                         </div>
                         
                         <!-- AI Analysis Card -->
                         <div class="glass-strong rounded-2xl p-6 gradient-border fade-in" style="animation-delay: 0.1s">
-                            <div class="flex items-center space-x-3 mb-6">
-                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-600 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                    </svg>
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-600 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white">AI Analysis</h3>
+                                    <div id="data-status-badge" class="hidden px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-[10px] text-yellow-500 font-bold uppercase">
+                                        Limited Data
+                                    </div>
+                                    <div id="ai-status-badge" class="hidden px-2 py-0.5 rounded-md bg-red-500/10 border border-red-500/20 text-[10px] text-red-500 font-bold uppercase">
+                                        AI Offline
+                                    </div>
                                 </div>
-                                <h3 class="text-lg font-bold text-white">AI Analysis</h3>
-                                <div class="flex items-center space-x-2 ml-auto">
+                                <div class="flex items-center space-x-2">
+                                    <button 
+                                        onclick="copyReport()"
+                                        id="copy-btn"
+                                        title="Copy to clipboard"
+                                        class="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-coral-400 hover:border-coral-500/30 transition-all"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                        </svg>
+                                    </button>
                                     <button 
                                         onclick="createGithubIssue()"
                                         id="fix-btn"
                                         class="hidden px-3 py-1.5 rounded-lg bg-coral-500/10 border border-coral-500/30 text-coral-400 text-xs font-bold hover:bg-coral-500/20 transition-all flex items-center space-x-1"
                                     >
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 4.438 9.8 10.564 11.307.6.111.82-.261.82-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.44-1.304.759-1.607-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.216.694.825.576 6.138-1.508 10.564-6.005 10.564-11.307 0-6.627-5.373-12-12-12z"/></svg>
                                         <span>Create Fix Issue</span>
                                     </button>
                                     <button 
@@ -511,13 +560,12 @@
                                         id="slack-btn"
                                         class="hidden px-3 py-1.5 rounded-lg bg-[#4A154B]/50 border border-[#4A154B] text-white text-xs font-bold hover:bg-[#4A154B]/80 transition-all flex items-center space-x-1"
                                     >
-                                        <span>📢 Send to Slack</span>
+                                        <span>📢 Slack</span>
                                     </button>
-                                    <span class="text-xs text-gray-500 font-mono" id="report-timestamp"></span>
                                 </div>
                             </div>
                             
-                            <div id="ai-analysis" class="prose prose-invert prose-sm max-w-none">
+                            <div id="ai-analysis" class="prose prose-invert prose-sm max-w-none font-sans">
                                 <!-- AI report content goes here -->
                             </div>
 
@@ -678,11 +726,54 @@
 
         // ==================== INVESTIGATION ====================
         let currentReport = null;
+
+        async function fetchSamples() {
+            try {
+                const res = await fetch('/samples');
+                const samples = await res.json();
+                const container = document.getElementById('sample-buttons');
+                
+                if (samples && samples.length > 0) {
+                    container.innerHTML = samples.map(s => `
+                        <button 
+                            onclick="loadSample('${escapeHtml(s.repo)}', '${escapeHtml(s.alert)}')"
+                            class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-gray-400 hover:bg-coral-500/10 hover:text-coral-400 hover:border-coral-500/30 transition-all"
+                        >
+                            ${escapeHtml(s.title)}
+                        </button>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<span class="text-[10px] text-gray-600 italic">No samples available.</span>';
+                }
+            } catch (e) {
+                console.error("Failed to fetch samples", e);
+            }
+        }
+
+        function loadSample(repo, alert) {
+            document.getElementById('repo-input').value = repo;
+            document.getElementById('alert-input').value = alert;
+            document.getElementById('alert-input').focus();
+        }
+
+        async function copyReport() {
+            if (!currentReport || !currentReport.ai_analysis) return;
+            try {
+                await navigator.clipboard.writeText(currentReport.ai_analysis);
+                const btn = document.getElementById('copy-btn');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                setTimeout(() => btn.innerHTML = original, 2000);
+            } catch (err) {
+                alert('Failed to copy: ' + err);
+            }
+        }
         
         async function runInvestigation() {
             const repoInput = document.getElementById('repo-input');
             const compareInput = document.getElementById('compare-input');
             const alertInput = document.getElementById('alert-input');
+            const inputCard = document.getElementById('input-card');
             const repo = repoInput.value.trim();
             const compareRepo = compareInput.value.trim();
             const alertText = alertInput.value.trim();
@@ -703,6 +794,7 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('results').classList.add('hidden');
+            inputCard.classList.add('loading-glow');
             
             const loadingStatuses = [
                 'Pinging Coral data sources...',
@@ -730,6 +822,7 @@
                 });
                 
                 clearInterval(statusInterval);
+                inputCard.classList.remove('loading-glow');
                 
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
@@ -743,6 +836,7 @@
                 
             } catch (error) {
                 clearInterval(statusInterval);
+                inputCard.classList.remove('loading-glow');
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('empty-state').classList.remove('hidden');
                 alert('Investigation failed: ' + error.message);
@@ -762,7 +856,29 @@
             document.getElementById('stat-sentry').textContent = stats.sentry_issues_found || 0;
             document.getElementById('stat-commits').textContent = stats.github_commits_analyzed || 0;
             document.getElementById('stat-alerts').textContent = stats.security_alerts_found || 0;
-            document.getElementById('stat-correlations').textContent = stats.cross_source_correlations || 0;
+            
+            const evidenceVal = document.getElementById('evidence-score-val');
+            const score = report.evidence_score || 0;
+            evidenceVal.textContent = score;
+            const evidenceParent = document.getElementById('stat-evidence-score');
+            if (score >= 70) evidenceParent.className = 'text-lg font-bold text-green-400';
+            else if (score >= 40) evidenceParent.className = 'text-lg font-bold text-yellow-400';
+            else evidenceParent.className = 'text-lg font-bold text-red-400';
+
+            // Limited data badge
+            const totalData = (stats.sentry_issues_found || 0) + (stats.github_commits_analyzed || 0);
+            if (totalData < 3) {
+                document.getElementById('data-status-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('data-status-badge').classList.add('hidden');
+            }
+
+            // AI Status badge
+            if (report.ai_analysis && (report.ai_analysis.includes('[AI Analysis Failed]') || report.ai_analysis.includes('Fallback Mode'))) {
+                document.getElementById('ai-status-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('ai-status-badge').classList.add('hidden');
+            }
             
             // Timestamp
             if (report.timestamp) {
@@ -774,6 +890,9 @@
             const analysisHtml = markdownToHtml(report.ai_analysis || 'No analysis available.');
             document.getElementById('ai-analysis').innerHTML = analysisHtml;
             
+            // Apply Confidence Coloring
+            colorizeConfidence();
+
             // Telemetry & Data
             const raw = report.raw_data || {};
             const meta = report.queries_meta || {};
@@ -798,6 +917,26 @@
             }
         }
 
+        function colorizeConfidence() {
+            const container = document.getElementById('ai-analysis');
+            const sections = container.querySelectorAll('.report-section');
+            sections.forEach(s => {
+                if (s.textContent.includes('Confidence Score')) {
+                    const nextP = s.nextElementSibling;
+                    if (nextP && nextP.tagName === 'P') {
+                        const text = nextP.textContent.toLowerCase();
+                        if (text.includes('high')) {
+                            nextP.innerHTML = `<span class="px-2 py-0.5 rounded bg-green-500/20 text-green-400 font-bold border border-green-500/30">HIGH</span> ${nextP.innerHTML.replace(/high/i, '')}`;
+                        } else if (text.includes('medium')) {
+                            nextP.innerHTML = `<span class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 font-bold border border-yellow-500/30">MEDIUM</span> ${nextP.innerHTML.replace(/medium/i, '')}`;
+                        } else if (text.includes('low')) {
+                            nextP.innerHTML = `<span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold border border-red-500/30">LOW</span> ${nextP.innerHTML.replace(/low/i, '')}`;
+                        }
+                    }
+                }
+            });
+        }
+        
         // ==================== CORE Logic ====================
         
         async function checkSourceStatus() {
@@ -835,6 +974,7 @@
         window.addEventListener('load', () => {
             checkSourceStatus();
             fetchRecentInvestigations();
+            fetchSamples();
         });
 
         async function fetchRecentInvestigations() {
@@ -1087,7 +1227,7 @@
                 // Italic
                 .replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>')
                 // Code
-                .replace(/`(.+?)`/g, '<code class="bg-dark-700 px-1.5 py-0.5 rounded text-coral-300 text-xs">$1</code>')
+                .replace(/`(.+?)`/g, '<code class="font-mono bg-dark-700 px-1.5 py-0.5 rounded text-coral-300 text-xs">$1</code>')
                 // Bullet lists
                 .replace(/^- (.+)$/gm, '<li class="text-gray-300 ml-4 mb-1 flex items-start"><span class="text-coral-500 mr-2 mt-1.5 text-xs">●</span><span>$1</span></li>')
                 // Numbered lists

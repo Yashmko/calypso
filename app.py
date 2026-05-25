@@ -25,6 +25,18 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 
+@app.route("/samples")
+def get_samples():
+    """Return sample incidents for the demo."""
+    try:
+        with open("sample_incidents.json", "r") as f:
+            samples = json.load(f)
+        return jsonify(samples)
+    except Exception as e:
+        logger.error(f"Error loading samples: {e}")
+        return jsonify([])
+
+
 @app.route("/")
 def index():
     """Serve the main UI page."""
