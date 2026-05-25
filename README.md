@@ -182,11 +182,12 @@ ORDER BY ts DESC LIMIT 10;
                            ▼
                ┌───────────────────────┐
                │   Incident Report     │
-               │  · Summary            │
+               │  · Incident Summary   │
                │  · Root Cause         │
-               │  · Affected Systems   │
-               │  · Action Plan        │
-               │  · Prevention         │
+               │  · Affected Components│
+               │  · Recommended Actions│
+               │  · Prevention Plan    │
+               │  · Confidence Score   │
                └───────────────────────┘
 ```
 
@@ -216,6 +217,7 @@ calypso/
 ├── 🔌  queries.py            # All Coral SQL (real subprocess calls)
 ├── 🤖  gemini.py             # Gemini 1.5 Flash integration
 ├── 📋  report.py             # JSON report formatter
+├── 💾  db.py                 # SQLite persistence layer
 ├── 🌐  app.py                # Flask server (port 5000)
 │
 ├── templates/
@@ -225,6 +227,7 @@ calypso/
 ├── .env.example              # Template for others
 ├── .gitignore                # Keeps .env safe
 ├── requirements.txt          # flask, google-generativeai, python-dotenv
+├── sample_incidents.json     # Predefined demo scenarios
 ├── README.md                 # You are here
 └── SUBMISSION.md             # Hackathon submission copy
 ```
@@ -323,9 +326,10 @@ python app.py
 
 ### Environment Variables
 
-| Variable | Required | Where to Get |
-|---|---|---|
-| `GEMINI_API_KEY` | ✅ Yes | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| Variable | Required | Where to Get | Description |
+|---|---|---|---|
+| `GEMINI_API_KEY` | ✅ Yes | [aistudio.google.com](https://aistudio.google.com/app/apikey) | API key for Gemini 1.5 Flash |
+| `SLACK_WEBHOOK_URL` | ✅ Yes | [Incoming Webhooks](https://api.slack.com/messaging/webhooks) | Webhook URL to send reports to Slack |
 
 ---
 
@@ -365,8 +369,7 @@ Step 9 → Click "Create Fix Issue" to log it in GitHub
 ```json
 {
   "alert": "Database timeout errors spiking in production API",
-  "owner": "your-org",
-  "repo": "your-repo",
+  "repo": "your-org/your-repo",
   "compare_repo": "your-org/other-repo"
 }
 ```
@@ -381,14 +384,11 @@ Step 9 → Click "Create Fix Issue" to log it in GitHub
     "github_commits_analyzed": 10,
     "security_alerts_found": 2,
     "open_prs_found": 3,
-    "cross_source_correlations": 4
+    "cross_source_correlations": 4,
+    "timeline_events": 15
   },
-  "query_log": [
-    {
-      "sql": "SELECT title FROM sentry.issues ...",
-      "duration_ms": 312
-    }
-  ],
+  "evidence_score": 85,
+  "queries_meta": {},
   "raw_data": {}
 }
 ```
