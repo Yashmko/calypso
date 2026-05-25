@@ -5,9 +5,75 @@ Formats the AI-generated incident report into a structured JSON response.
 
 import json
 import logging
+import os
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
+
+
+def send_to_slack(report: dict) -> bool:
+    """Post a concise incident summary to a Slack webhook."""
+    webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+    if not webhook_url:
+        logger.error("SLACK_WEBHOOK_URL not configured.")
+        return False
+        
+    try:
+        # Extract a short summary from the AI analysis
+        ai_summary = "No summary available."
+        if "ai_analysis" in report and report["ai_analysis"]:
+            lines = report["ai_analysis"].split("\n")
+            for line in lines:
+                if line.strip() and not line.startswith("#"):
+                    ai_summary = line[:300] + ("..." if len(line) > 300 else "")
+                    break
+                    
+        stats = report.get("stats", {})
+        correlations = stats.get("cross_source_correlations", 0)
+        
+        message = {
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🚨 CALYPSO Incident Report"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*Summary:*\n{ai_summary}"
+                    }
+                },
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*{stats.get('sentry_issues_found', 0)}* Sentry Issues | *{stats.get('github_commits_analyzed', 0)}* Commits | *{correlations}* Correlations"
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        req = urllib.request.Request(
+            webhook_url,
+            data=json.dumps(message).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        
+        with urllib.request.urlopen(req) as response:
+            return response.status == 200
+            
+    except Exception as e:
+        logger.error(f"Failed to send to Slack: {e}")
+        return False
 
 
 def format_report(ai_analysis: str, raw_data: dict) -> dict:

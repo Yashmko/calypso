@@ -16,11 +16,21 @@ logger = logging.getLogger(__name__)
 QUERY_HISTORY = []
 
 def sanitize_input(val: str) -> str:
-    """Strip special characters from user input to prevent SQL safety issues."""
+    """Strip special characters and strictly validate input to prevent SQL safety issues."""
     if not val:
-        return ""
+        raise ValueError("Input value cannot be empty.")
+        
+    val_str = str(val).strip()
+    if len(val_str) > 200:
+        raise ValueError("Input value exceeds maximum allowed length.")
+        
     # Allow alphanumeric, underscore, hyphen, dot, and space (for keywords)
-    return re.sub(r'[^a-zA-Z0-9\._\-\s/]', '', str(val))
+    cleaned = re.sub(r'[^a-zA-Z0-9\._\-\s/]', '', val_str)
+    
+    if not cleaned or cleaned.isspace():
+        raise ValueError(f"Input '{val}' contains only invalid characters.")
+        
+    return cleaned
 
 def run_coral_query(sql: str) -> dict:
     """
@@ -33,10 +43,10 @@ def run_coral_query(sql: str) -> dict:
         ["coral", "query", "--json", sql],
         ["coral", "query", sql]
     ]
-    
-    result_data = []
-    final_cmd = None
-    
+
+    result_data = None
+    last_error = ""
+
     for cmd in variants:
         try:
             result = subprocess.run(
@@ -45,12 +55,14 @@ def run_coral_query(sql: str) -> dict:
                 text=True,
                 timeout=60
             )
-            
+
             if result.returncode != 0:
+                last_error = result.stderr.strip() or result.stdout.strip() or f"Process exited with code {result.returncode}"
                 continue
-                
+
             output = result.stdout.strip()
             if not output:
+                last_error = "Empty output returned from Coral."
                 continue
 
             try:
@@ -59,17 +71,21 @@ def run_coral_query(sql: str) -> dict:
                     result_data = data
                 elif isinstance(data, dict):
                     result_data = data.get("results", []) or data.get("data", []) or []
-                
-                final_cmd = cmd
+
                 break # Found a winner
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                last_error = f"JSON parse error: {e}"
                 continue
-                
-        except Exception:
+
+        except Exception as e:
+            last_error = str(e)
             continue
-            
-    execution_time_ms = int((time.time() - start_time) * 1000)
-    
+
+    if result_data is None:
+        logger.error(f"Coral query failed. Last error: {last_error} | SQL: {sql}")
+        raise RuntimeError(f"Coral query failed: {last_error}")
+
+    execution_time_ms = int((time.time() - start_time) * 1000)    
     query_info = {
         "data": result_data,
         "sql": sql,
@@ -89,16 +105,26 @@ def run_coral_query(sql: str) -> dict:
     return query_info
 
 
+def _check_source_connectivity(sql: str) -> bool:
+    """Run a lightweight query purely to check return code (0 = connected)."""
+    try:
+        result = subprocess.run(
+            ["coral", "sql", "--format", "json", sql],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def get_source_status() -> dict:
     """Check if GitHub and Sentry sources are responding."""
-    github_check = run_coral_query("SELECT 1 FROM github.user LIMIT 1")
-    sentry_check = run_coral_query("SELECT 1 FROM sentry.projects LIMIT 1")
-    
     return {
-        "github": len(github_check["data"]) > 0,
-        "sentry": len(sentry_check["data"]) > 0
+        "github": _check_source_connectivity("SELECT 1 FROM github.user LIMIT 1"),
+        "sentry": _check_source_connectivity("SELECT 1 FROM sentry.projects LIMIT 1")
     }
-
 
 def get_recent_sentry_issues(limit: int = 10) -> dict:
     """Get recent fatal/error level issues from Sentry."""
@@ -224,7 +250,7 @@ def get_multi_repo_comparison(repos: list, limit: int = 10) -> dict:
 if __name__ == "__main__":
     # Quick test
     print("Testing Coral queries...")
-    result = get_recent_github_commits("Yashmko", "Auditflow", 1)
+    result = get_recent_github_commits("Yashmko", "calypso", 1)
     print(f"SQL: {result['sql']}")
     print(f"Time: {result['execution_time_ms']}ms")
     print(json.dumps(result['data'], indent=2))

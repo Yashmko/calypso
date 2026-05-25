@@ -160,13 +160,13 @@ def _build_context(github_data: dict, sentry_data: dict) -> str:
 
 def _generate_fallback_report(alert_description: str) -> str:
     """Generate a basic fallback report when Gemini API fails."""
-    return f"""## Incident Report
+    return f"""## Incident Report (Fallback Mode)
 
 ### 1. Incident Summary
 Investigating alert: "{alert_description}". The system detected an anomaly that requires immediate attention.
 
 ### 2. Likely Root Cause
-Unable to determine root cause due to analysis service unavailability. Please review recent deployments and error logs manually.
+**[AI Analysis Failed]** Unable to determine root cause due to Gemini AI service unavailability. Please review the RAW EVIDENCE tab and logs manually.
 
 ### 3. Affected Components
 - Primary service (investigating)

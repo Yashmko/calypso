@@ -8,6 +8,8 @@ import logging
 from flask import Flask, render_template, request, jsonify
 from agent import investigate, chat_followup
 from queries import get_source_status
+from db import init_db, save_investigation, get_recent_investigations, get_investigation
+from report import send_to_slack
 
 # Configure logging
 logging.basicConfig(
@@ -15,6 +17,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Initialize database
+init_db()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -24,6 +29,25 @@ app.secret_key = os.urandom(24)
 def index():
     """Serve the main UI page."""
     return render_template("index.html")
+
+
+@app.route("/slack", methods=["POST"])
+def slack_route():
+    """Trigger sending report to Slack."""
+    try:
+        report = request.get_json()
+        if not report:
+            return jsonify({"error": "No report data provided"}), 400
+            
+        success = send_to_slack(report)
+        if success:
+            return jsonify({"status": "success"})
+        else:
+            return jsonify({"error": "Failed to send to Slack or webhook not configured"}), 500
+            
+    except Exception as e:
+        logger.error(f"Error sending to slack: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/investigate", methods=["POST"])
@@ -60,6 +84,10 @@ def run_investigation():
         # Run the investigation
         report = investigate(alert_description, repo_full_name, compare_repo)
         
+        # Save to database
+        status = "error" if "Error" in report.get("ai_analysis", "") else "success"
+        save_investigation(repo_full_name, alert_description, report, status)
+        
         return jsonify(report)
         
     except Exception as e:
@@ -68,6 +96,19 @@ def run_investigation():
             "error": "Internal server error",
             "message": str(e)
         }), 500
+
+@app.route("/investigations", methods=["GET"])
+def get_investigations_route():
+    """Return the last 10 cases."""
+    return jsonify(get_recent_investigations(10))
+
+@app.route("/investigations/<int:inv_id>", methods=["GET"])
+def get_investigation_detail(inv_id):
+    """Return a single investigation in detail."""
+    inv = get_investigation(inv_id)
+    if inv:
+        return jsonify(inv)
+    return jsonify({"error": "Investigation not found"}), 404
 
 
 @app.route("/chat", methods=["POST"])
