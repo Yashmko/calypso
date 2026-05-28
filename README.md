@@ -226,7 +226,7 @@ calypso/
 ├── .env                      # Your secrets (never committed)
 ├── .env.example              # Template for others
 ├── .gitignore                # Keeps .env safe
-├── requirements.txt          # flask, google-generativeai, python-dotenv
+├── requirements.txt          # flask, google-genai, python-dotenv
 ├── sample_incidents.json     # Predefined demo scenarios
 ├── README.md                 # You are here
 └── SUBMISSION.md             # Hackathon submission copy

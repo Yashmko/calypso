@@ -5,21 +5,29 @@ Uses Google's Gemini API to analyze incident data and generate intelligent repor
 
 import os
 import logging
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    logger.warning("GEMINI_API_KEY not found in .env file")
+# Attempt to load API key from environment, Railway will inject this in production.
+# GOOGLE_API_KEY is also supported by the SDK, so we check both.
+API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
-genai.configure(api_key=GEMINI_API_KEY)
+if not API_KEY:
+    logger.warning("Neither GEMINI_API_KEY nor GOOGLE_API_KEY found in environment variables. AI features will use fallback mode.")
+    client = None
+else:
+    try:
+        client = genai.Client(api_key=API_KEY)
+    except Exception as e:
+        logger.error(f"Failed to initialize Gemini client: {e}")
+        client = None
 
-# Use gemini-flash-latest for fast, free-tier responses
-MODEL = genai.GenerativeModel("gemini-flash-latest")
+# Use gemini-1.5-flash for fast, free-tier responses
+MODEL_ID = "gemini-1.5-flash"
 
 
 def generate_incident_report(alert_description: str, github_data: dict, sentry_data: dict) -> str:
@@ -77,7 +85,14 @@ Provide a short (1 sentence) explanation for why this score was chosen based on 
 Format your response in clean markdown. Be thorough but concise. Focus on actionable insights.
 """
 
-        response = MODEL.generate_content(prompt)
+        if not client:
+            logger.error("Gemini client not initialized (missing API key). Using fallback.")
+            return _generate_fallback_report(alert_description)
+            
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt
+        )
         
         if response and response.text:
             return response.text
@@ -225,7 +240,14 @@ If the data doesn't contain the answer, say so.
 Be helpful, concise, and technical. Use markdown for lists or code.
 """
 
-        response = MODEL.generate_content(prompt)
+        if not client:
+            logger.error("Gemini client not initialized. Cannot answer follow-up.")
+            return "Error: AI service is unavailable due to missing API key."
+
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt
+        )
         return response.text if response and response.text else "I'm sorry, I couldn't generate an answer."
         
     except Exception as e:

@@ -3,1013 +3,751 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CALYPSO - Pixel SRE Oracle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>CALYPSO | AI Incident Investigation</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Phosphor Icons for a clean, thin-line aesthetic) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        app: {
+                            bg: '#F4F5F0',       // Soft sage/off-white (Reference 1)
+                            card: '#FFFFFF',
+                            fg: '#1A1A1A',       // Soft black
+                            border: '#1A1A1A',   // Crisp structural lines
+                            muted: '#6B7280',
+                            accent: '#A5C4D4',   // Muted blue (Reference 2)
+                            highlight: '#E8D8A6', // Muted yellow (Reference 2)
+                            slack: '#EFEAE6'     // Warm neutral for buttons
+                        }
+                    },
+                    borderWidth: {
+                        '1.5': '1.5px',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px -2px rgba(0,0,0,0.03)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --bg-color: #0a0a0a;
-            --card-bg: #111111;
-            --gold: #FFD700;
-            --green: #00FF41;
-            --red: #FF4444;
-            --text: #FFFFFF;
-            --muted: #888888;
+        /* Custom scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+        
+        /* Utility for markdown/report rendering */
+        .prose h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; border-bottom: 1.5px solid #1A1A1A; padding-bottom: 0.5rem; }
+        .prose h2 { font-size: 1.25rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .prose p { margin-bottom: 1rem; color: #374151; line-height: 1.6; }
+        .prose ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.5rem; color: #374151; }
+        .prose code { font-family: 'JetBrains Mono', monospace; background-color: #F3F4F6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; border: 1px solid #E5E7EB; }
+        .prose strong { font-weight: 600; color: #111827; }
+        
+        /* Thin line hide utility */
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Pixel Cat Animation (Idle & Random Gestures) */
+        @keyframes sit-f1 {
+            0%, 10.99% { opacity: 1; }
+            11%, 14.99% { opacity: 0; }  /* Yields to tail wag */
+            15%, 49.99% { opacity: 1; }
+            50%, 54.99% { opacity: 0; }  /* Yields to paw kick */
+            55%, 100% { opacity: 1; }
         }
+        @keyframes sit-f2 {
+            0%, 10.99% { opacity: 0; }
+            11%, 14.99% { opacity: 1; }  /* Tail wag */
+            15%, 100% { opacity: 0; }
+        }
+        @keyframes sit-f3 {
+            0%, 49.99% { opacity: 0; }
+            50%, 54.99% { opacity: 1; }  /* Paw kick */
+            55%, 100% { opacity: 0; }
+        }
+        .cat-f1 { animation: sit-f1 12s infinite; }
+        .cat-f2 { animation: sit-f2 12s infinite; }
+        .cat-f3 { animation: sit-f3 12s infinite; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text);
-            font-family: 'VT323', monospace;
-            image-rendering: pixelated;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, h4, button, .badge, .label, .quest-title {
-            font-family: 'Press Start 2P', cursive;
-            text-transform: uppercase;
-        }
-
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace !important;
-        }
-
-        /* Pixel Border Effect */
-        .pixel-border {
-            border: 2px solid var(--gold);
-            box-shadow: 
-                4px 0 0 var(--gold),
-                -4px 0 0 var(--gold),
-                0 4px 0 var(--gold),
-                0 -4px 0 var(--gold);
-            margin: 4px;
-        }
-
-        .pixel-border-green {
-            border: 2px solid var(--green);
-            box-shadow: 
-                4px 0 0 var(--green),
-                -4px 0 0 var(--green),
-                0 4px 0 var(--green),
-                0 -4px 0 var(--green);
-            margin: 4px;
-        }
-
-        .pixel-border-red {
-            border: 2px solid var(--red);
-            box-shadow: 
-                4px 0 0 var(--red),
-                -4px 0 0 var(--red),
-                0 4px 0 var(--red),
-                0 -4px 0 var(--red);
-            margin: 4px;
-        }
-
-        /* Cards */
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        /* Buttons */
-        .pixel-btn {
-            background-color: var(--gold);
-            color: #000;
-            padding: 12px 16px;
-            border: 2px solid #000;
-            box-shadow: 3px 3px 0px #000;
-            font-size: 8px;
-            transition: all 0.1s;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .pixel-btn:hover {
-            background-color: #FFF;
-            transform: scale(1.05);
-        }
-
-        .pixel-btn:active {
-            transform: translateY(2px);
-            box-shadow: 1px 1px 0px #000;
-        }
-
-        .pixel-btn-muted {
-            background-color: var(--muted);
-            box-shadow: 3px 3px 0px #000;
-        }
-
-        /* Headers */
-        .card-header {
-            color: var(--gold);
-            font-size: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid var(--gold);
-            padding-bottom: 10px;
-        }
-
-        /* Inputs */
-        input, textarea {
-            background-color: #000;
-            border: 2px solid var(--gold);
-            color: var(--text);
-            padding: 10px;
-            font-family: 'VT323', monospace;
-            font-size: 20px;
-            width: 100%;
-            outline: none;
-        }
-
-        input:focus, textarea:focus {
-            box-shadow: 0 0 10px var(--gold);
-        }
-
-        /* Terminal Style */
-        .terminal-box {
-            background-color: #000;
-            border: 2px solid var(--green);
-            padding: 15px;
-            color: var(--green);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            min-height: 100px;
-            position: relative;
-        }
-
-        /* Pixel Sprite CSS */
-        .pixel-sprite {
-            display: grid;
-            grid-template-columns: repeat(5, 4px);
-            gap: 0;
-            margin-right: 15px;
-        }
-        .pixel-sprite div { width: 4px; height: 4px; }
-        .g { background: var(--gold); }
-        .b { background: transparent; }
-
-        /* Decorations */
-        .pixel-divider {
-            height: 8px;
-            width: 100%;
-            background-image: linear-gradient(90deg, var(--gold) 50%, transparent 50%);
-            background-size: 16px 8px;
-            margin: 20px 0;
-        }
-
-        .top-pattern, .bottom-pattern {
-            height: 12px;
-            width: 100%;
-            background-image: repeating-conic-gradient(var(--gold) 0% 25%, #000 0% 50%);
-            background-size: 12px 12px;
-        }
-
-        /* Badges */
-        .badge {
-            font-size: 7px;
-            padding: 4px 8px;
-            border: 1px solid currentColor;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .staggered-fade {
-            animation: fadeIn 0.4s ease-out forwards;
-            opacity: 0;
-        }
-
-        .loading-bar-container {
-            border: 2px solid var(--gold);
-            height: 24px;
-            width: 100%;
-            margin: 20px 0;
-            background: #000;
-            padding: 2px;
-        }
-
-        .loading-bar-fill {
-            height: 100%;
-            background: var(--gold);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        /* Report Specific */
-        .report-card {
-            background-color: var(--card-bg);
-            border: 2px solid var(--gold);
-            margin-bottom: 20px;
-        }
-        .report-header-bar {
-            background-color: var(--gold);
-            color: #000;
-            padding: 5px 10px;
-            font-size: 8px;
-            font-weight: bold;
-        }
-        .report-body {
-            padding: 15px;
-            font-size: 20px;
-            line-height: 1.4;
-        }
-
-        /* Quest List */
-        .quest-item {
-            border-left: 6px solid var(--gold);
-            padding: 10px;
-            background: #1a1a1a;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .quest-item:hover {
-            background: var(--gold);
-            color: #000;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border: 2px solid #000; }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 14px; }
-            .badge { font-size: 6px; }
-            .pixel-btn { font-size: 6px; }
-        }
-
-        /* Cursor */
-        .cursor-blink {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background-color: var(--text);
-            animation: blink 0.8s infinite;
-            vertical-align: middle;
-        }
-        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-
-        /* HP Bar */
-        .hp-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 8px;
-        }
-        .hp-slots {
-            display: flex;
-            gap: 2px;
-        }
-        .hp-slot { width: 8px; height: 12px; background: var(--green); border: 1px solid #000; }
-        .hp-slot.empty { background: #333; }
+        /* Animation for results */
+        #results-area.flex { display: flex; }
     </style>
 </head>
-<body>
-    <div class="top-pattern"></div>
-    
-    <!-- Header -->
-    <header class="p-6 border-b-4 border-double border-yellow-600 bg-zinc-900">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center">
-                <!-- Pixel Star Sprite -->
-                <div class="pixel-sprite">
-                    <div class="b"></div><div class="b"></div><div class="g"></div><div class="b"></div><div class="b"></div>
-                    <div class="b"></div><div class="g"></div><div class="g"></div><div class="g"></div><div class="b"></div>
-                    <div class="g"></div><div class="g"></div><div class="g"></div><div class="g"></div><div class="g"></div>
-                    <div class="b"></div><div class="g"></div><div class="g"></div><div class="g"></div><div class="b"></div>
-                    <div class="b"></div><div class="b"></div><div class="g"></div><div class="b"></div><div class="b"></div>
-                </div>
-                <div>
-                    <h1 class="text-2xl text-yellow-400 m-0 leading-none" style="letter-spacing: 2px;">CALYPSO</h1>
-                    <p class="text-xl text-zinc-400 mt-2">THE SRE ORACLE</p>
-                </div>
-            </div>
+<body class="bg-app-bg text-app-fg font-sans antialiased h-screen overflow-hidden flex selection:bg-app-accent selection:text-app-fg">
 
-            <div class="flex flex-col gap-3 items-end">
-                <div class="flex gap-4">
-                    <div id="status-github" class="badge text-zinc-500">
-                        ◆ GITHUB [WAITING]
-                    </div>
-                    <div id="status-sentry" class="badge text-zinc-500">
-                        ◆ SENTRY [WAITING]
-                    </div>
-                </div>
-                <div class="hp-bar">
-                    <span>HEALTH:</span>
-                    <div class="hp-slots">
-                        <div class="hp-slot"></div><div class="hp-slot"></div><div class="hp-slot"></div><div class="hp-slot"></div>
-                        <div class="hp-slot"></div><div class="hp-slot"></div><div class="hp-slot"></div><div class="hp-slot"></div>
-                    </div>
-                    <span>100%</span>
-                </div>
+    <!-- SIDEBAR (Investigation History) -->
+    <aside class="w-72 border-r-1.5 border-app-border flex flex-col h-full bg-app-bg z-10 shrink-0">
+        <!-- Header -->
+        <div class="h-16 border-b-1.5 border-app-border flex items-center justify-between px-6 shrink-0 bg-app-card">
+            <div class="flex items-center gap-2">
+                <i class="ph ph-hexagon font-bold text-xl"></i>
+                <span class="font-semibold tracking-wide">CALYPSO</span>
             </div>
+            <span class="text-[10px] uppercase tracking-widest text-app-muted border border-app-border rounded-full px-2 py-0.5">v2.0</span>
         </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- New Investigation Button -->
+        <div class="p-4 border-b-1.5 border-app-border shrink-0">
+            <button onclick="resetUI()" class="w-full flex items-center justify-center gap-2 bg-app-fg text-white py-2.5 rounded-xl text-sm font-medium hover:bg-black transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-fg">
+                <i class="ph ph-plus"></i> New Investigation
+            </button>
+        </div>
+
+        <!-- History List -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4 flex flex-col gap-3" id="history-list">
+            <div class="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Recent</div>
+            
+            {% if history %}
+                {% for inv in history %}
+                <button onclick="loadInvestigation({{ inv.id }})" class="history-item w-full text-left p-3 rounded-xl border-1.5 border-transparent hover:border-app-border bg-app-card/50 hover:bg-app-card transition-all group" data-id="{{ inv.id }}">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-sm font-medium truncate pr-2">{{ inv.repo }}</span>
+                        <span class="text-[10px] text-app-muted shrink-0 mt-0.5">{{ inv.timestamp[:10] }}</span>
+                    </div>
+                    <div class="text-xs text-app-muted truncate">{{ inv.alert_text }}</div>
+                </button>
+                {% endfor %}
+            {% else %}
+                <div class="text-xs text-app-muted text-center py-10 italic">No history yet.</div>
+            {% endif %}
+        </div>
         
-        <!-- SIDEBAR -->
-        <div class="lg:col-span-4 space-y-6">
+        <!-- Footer / Settings (with animated pixel cat) -->
+        <div class="relative h-14 border-t-1.5 border-app-border bg-app-card flex justify-between items-center px-4 overflow-hidden group">
             
-            <!-- INPUT CARD -->
-            <div id="input-card" class="card pixel-border staggered-fade" style="animation-delay: 0.1s">
-                <div class="card-header">▶ NEW INVESTIGATION</div>
-                
-                <div class="mb-4">
-                    <div class="text-[8px] text-zinc-500 mb-2 font-['Press_Start_2P']">DEMO SCENARIOS</div>
-                    <div id="sample-buttons" class="flex flex-wrap gap-2">
-                        <!-- Samples populated by JS -->
-                    </div>
-                </div>
+            <!-- Status Text -->
+            <div class="relative z-10 flex items-center justify-end w-full text-[10px] font-mono text-app-muted/60 uppercase tracking-[0.15em] select-none cursor-default">
+                <span id="system-status" class="text-[8px] animate-pulse opacity-70 bg-app-card py-1 pl-2 rounded">◈ ONLINE</span>
+            </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <div class="text-[8px] text-yellow-500 mb-2 font-['Press_Start_2P']">⚓ REPOSITORY</div>
-                        <input id="repo-input" type="text" placeholder="owner/repo">
-                    </div>
-                    <div>
-                        <div class="text-[8px] text-yellow-500 mb-2 font-['Press_Start_2P']">⚔ COMPARE WITH</div>
-                        <input id="compare-input" type="text" placeholder="optional-repo">
-                    </div>
-                    <div>
-                        <div class="text-[8px] text-yellow-500 mb-2 font-['Press_Start_2P']">⚑ ALERT DATA</div>
-                        <textarea id="alert-input" rows="4" placeholder="> DESCRIBE THE INCIDENT..."></textarea>
-                    </div>
+            <!-- Stationary Pixel Cat -->
+            <div class="absolute inset-y-0 left-6 pointer-events-none flex items-end pb-3 opacity-40 group-hover:opacity-100 transition-opacity duration-500">
+                <svg width="22" height="22" viewBox="0 0 16 16" fill="#1A1A1A" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                    <!-- Frame 1: Sitting Idle -->
+                    <g class="cat-f1">
+                        <rect x="5" y="6" width="1" height="1"/> <!-- L Ear -->
+                        <rect x="9" y="6" width="1" height="1"/> <!-- R Ear -->
+                        <rect x="4" y="7" width="7" height="4"/> <!-- Head -->
+                        <rect x="5" y="11" width="5" height="4"/> <!-- Body -->
+                        <rect x="10" y="13" width="2" height="1"/> <!-- Tail base -->
+                        <rect x="12" y="12" width="1" height="1"/> <!-- Tail tip -->
+                    </g>
+                    <!-- Frame 2: Tail Wag -->
+                    <g class="cat-f2">
+                        <rect x="5" y="6" width="1" height="1"/>
+                        <rect x="9" y="6" width="1" height="1"/>
+                        <rect x="4" y="7" width="7" height="4"/>
+                        <rect x="5" y="11" width="5" height="4"/>
+                        <rect x="10" y="12" width="1" height="2"/> <!-- Tail moved up -->
+                        <rect x="11" y="11" width="1" height="1"/> <!-- Tail tip higher -->
+                    </g>
+                    <!-- Frame 3: Paw Kick -->
+                    <g class="cat-f3">
+                        <rect x="4" y="7" width="1" height="1"/> <!-- L Ear lowered -->
+                        <rect x="9" y="6" width="1" height="1"/> 
+                        <rect x="4" y="7" width="7" height="4"/>
+                        <rect x="5" y="11" width="5" height="4"/>
+                        <rect x="10" y="13" width="2" height="1"/>
+                        <rect x="12" y="12" width="1" height="1"/>
+                        <rect x="3" y="12" width="2" height="1"/> <!-- Paw kicking out -->
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN STAGE -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <!-- Top Navigation -->
+        <header class="h-16 border-b-1.5 border-app-border flex items-center justify-between px-8 bg-app-card shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-lg font-medium" id="current-investigation-title">Workspace</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Slack Broadcast Button -->
+                <button id="btn-broadcast-slack" class="hidden items-center gap-2 px-4 py-1.5 rounded-full border-1.5 border-app-border bg-app-slack hover:bg-[#e4ddd7] transition-colors text-sm font-medium">
+                    <i class="ph ph-slack-logo"></i> Broadcast
+                </button>
+
+                <button class="w-8 h-8 rounded-full border-1.5 border-app-border flex items-center justify-center hover:bg-gray-50 transition-colors">
+                    <i class="ph ph-dots-three"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-8 relative" id="main-scroll-area">
+            <div class="max-w-7xl w-full mx-auto flex flex-col gap-10">
+
+                <!-- INPUT AREA (Search / Query) -->
+                <div class="bg-app-card rounded-2xl border-1.5 border-app-border overflow-hidden shadow-card transition-all flex flex-col" id="input-container">
                     
-                    <div class="flex justify-between items-center pt-2">
-                        <span class="text-xs text-zinc-600">CTRL+ENTER</span>
-                        <button id="investigate-btn" onclick="runInvestigation()" class="pixel-btn">
-                            ▶ INVESTIGATE
-                        </button>
+                    <!-- Form Header / Quick Load -->
+                    <div class="px-5 py-3 border-b-1.5 border-app-border flex items-center justify-between bg-app-bg/50 shrink-0">
+                        <span class="text-xs font-semibold tracking-wider text-app-muted uppercase">New Investigation</span>
+                        <div class="flex items-center gap-2" id="sample-buttons">
+                            <span class="text-[10px] text-app-muted uppercase tracking-wider mr-1 hidden sm:inline-block">Quick Load:</span>
+                            <button type="button" onclick="loadSample('calypso/api-gateway', 'Sentry: 504 Gateway Timeout on /v1/auth')" class="text-[10px] font-medium px-2.5 py-1 border-1.5 border-app-border rounded-md hover:bg-app-border hover:text-white transition-colors">API Spike</button>
+                            <button type="button" onclick="loadSample('calypso/db-core', 'Postgres OOM Error: Memory usage > 95%')" class="text-[10px] font-medium px-2.5 py-1 border-1.5 border-app-border rounded-md hover:bg-app-border hover:text-white transition-colors">OOM Error</button>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- QUEST LOG -->
-            <div class="card pixel-border staggered-fade" style="animation-delay: 0.2s">
-                <div class="card-header">📜 QUEST LOG (RECENT)</div>
-                <div id="recent-investigations-list" class="max-h-60 overflow-y-auto pr-2">
-                    <!-- Loaded by JS -->
-                </div>
-            </div>
+                    <form id="investigation-form" onsubmit="handleInvestigate(event)" class="flex flex-col flex-1">
+                        
+                        <!-- Repo Inputs Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 border-b-1.5 border-app-border shrink-0">
+                            <!-- Target Repo -->
+                            <div class="flex items-center px-4 py-3 border-b-1.5 md:border-b-0 md:border-r-1.5 border-app-border focus-within:bg-gray-50 transition-colors group">
+                                <i class="ph ph-git-repository text-app-muted mr-3 text-lg group-focus-within:text-app-fg transition-colors"></i>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-0.5" for="repo-input">Repository</label>
+                                    <input type="text" id="repo-input" class="w-full bg-transparent border-none p-0 text-sm focus:ring-0 outline-none placeholder:text-gray-300" placeholder="owner/repo" required>
+                                </div>
+                            </div>
+                            <!-- Compare Repo -->
+                            <div class="flex items-center px-4 py-3 focus-within:bg-gray-50 transition-colors group">
+                                <i class="ph ph-git-branch text-app-muted mr-3 text-lg group-focus-within:text-app-fg transition-colors"></i>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-0.5" for="compare-input">Compare With <span class="text-gray-400 normal-case tracking-normal font-normal">(optional)</span></label>
+                                    <input type="text" id="compare-input" class="w-full bg-transparent border-none p-0 text-sm focus:ring-0 outline-none placeholder:text-gray-300" placeholder="owner/other-repo">
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- CONSOLE -->
-            <div class="card pixel-border staggered-fade" style="animation-delay: 0.3s">
-                <div class="card-header">👁️ CORAL TELEMETRY</div>
-                <div id="query-history-list" class="space-y-2">
-                    <!-- Loaded by JS -->
+                        <!-- Alert Description (Textarea) -->
+                        <textarea 
+                            id="incident-input" 
+                            rows="3" 
+                            class="w-full bg-transparent border-none px-5 py-4 text-sm resize-none focus:ring-0 outline-none placeholder:text-gray-400 flex-1"
+                            placeholder="Paste Sentry logs, GitHub issue URLs, or describe the alert..."
+                            required></textarea>
+                        
+                        <!-- Footer / Submit -->
+                        <div class="flex items-center justify-between px-4 py-3 border-t-1.5 border-app-border bg-gray-50/50 shrink-0">
+                            <div class="flex items-center gap-4 text-sm">
+                                <div class="flex items-center gap-2 text-app-muted cursor-pointer hover:text-app-fg transition-colors">
+                                    <i class="ph ph-paperclip"></i>
+                                    <span class="text-xs font-medium hidden sm:inline-block">Attach traces</span>
+                                </div>
+                                <select id="env-select" class="bg-transparent border-none text-xs font-medium text-app-muted focus:ring-0 cursor-pointer outline-none hover:text-app-fg transition-colors">
+                                    <option>Production Env</option>
+                                    <option>Staging Env</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-[10px] text-app-muted font-mono hidden md:inline-block">CTRL + ENTER</span>
+                                <button type="submit" id="btn-analyze" class="bg-app-fg text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-black transition-all flex items-center gap-2">
+                                    <span>Analyze Incident</span>
+                                    <i class="ph ph-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- LOADING STATE (Hidden by default) -->
+                <div id="loading-state" class="hidden flex-col items-center justify-center py-20 gap-4">
+                    <i class="ph ph-spinner animate-spin text-3xl text-app-muted"></i>
+                    <p class="text-sm font-medium text-app-muted animate-pulse">Correlating telemetry and generating AI insights...</p>
+                </div>
+
+                <!-- RESULTS AREA (Hidden by default) -->
+                <div id="results-area" class="hidden flex-col gap-8 opacity-0 transition-opacity duration-500">
+                        
+                    <!-- Top Metric Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Card 1: Confidence -->
+                        <div class="bg-app-card border-1.5 border-app-border rounded-2xl p-5 flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-1">AI Confidence</p>
+                                <p id="confidence-text" class="text-lg font-medium">Calculating...</p>
+                            </div>
+                            <div class="relative w-12 h-12 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90">
+                                    <circle cx="24" cy="24" r="22" stroke="#E5E7EB" stroke-width="3" fill="none"></circle>
+                                    <circle id="confidence-circle" cx="24" cy="24" r="22" stroke="#1A1A1A" stroke-width="3" fill="none" stroke-dasharray="138" stroke-dashoffset="138" class="transition-all duration-1000"></circle>
+                                </svg>
+                                <span id="confidence-score" class="absolute text-xs font-semibold">0%</span>
+                            </div>
+                        </div>
+                    
+                        <!-- Card 2: Impact -->
+                        <div class="bg-app-card border-1.5 border-app-border rounded-2xl p-5 flex flex-col justify-center">
+                            <p class="text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-1">Estimated MTTR</p>
+                            <div class="flex items-baseline gap-2">
+                                <p id="mttr-value" class="text-2xl font-semibold">--</p>
+                                <span class="text-sm text-app-muted">minutes</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Affected Grid -->
+                        <div class="grid grid-cols-2 divide-x-1.5 divide-app-border bg-app-card border-1.5 border-app-border rounded-2xl overflow-hidden">
+                            <div class="p-4 flex flex-col justify-center">
+                                <p class="text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-1">Root Node</p>
+                                <p id="root-node-name" class="text-sm font-medium truncate">None identified</p>
+                            </div>
+                            <div class="p-4 flex flex-col justify-center bg-app-highlight/30">
+                                <p class="text-[10px] font-semibold text-app-muted uppercase tracking-wider mb-1">Status</p>
+                                <p id="status-badge" class="text-sm font-medium text-amber-700">Checking...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Tabbed Interface -->
+                    <div class="bg-app-card border-1.5 border-app-border rounded-2xl overflow-hidden shadow-card flex flex-col min-h-[500px]">
+                        
+                        <!-- Tabs Header -->
+                        <div class="flex border-b-1.5 border-app-border overflow-x-auto hide-scrollbar shrink-0">
+                            <button onclick="switchTab('report')" id="tab-report" class="tab-btn px-6 py-4 text-sm font-medium border-r-1.5 border-app-border hover:bg-gray-50 transition-colors bg-white">
+                                Root Cause Analysis
+                            </button>
+                            <button onclick="switchTab('timeline')" id="tab-timeline" class="tab-btn px-6 py-4 text-sm font-medium border-r-1.5 border-app-border hover:bg-gray-50 transition-colors text-app-muted bg-transparent">
+                                Investigation Timeline
+                            </button>
+                            <button onclick="switchTab('sql')" id="tab-sql" class="tab-btn px-6 py-4 text-sm font-medium border-r-1.5 border-app-border hover:bg-gray-50 transition-colors text-app-muted bg-transparent">
+                                Coral Telemetry & SQL
+                            </button>
+                            <button onclick="switchTab('chat')" id="tab-chat" class="tab-btn flex items-center gap-2 px-6 py-4 text-sm font-medium border-r-1.5 border-app-border hover:bg-gray-50 transition-colors text-app-muted bg-transparent">
+                                <i class="ph ph-chat-teardrop"></i> Follow-up
+                            </button>
+                            <div class="flex-1 bg-gray-50/50"></div>
+                        </div>
+
+                        <!-- Tab Contents -->
+                        <div class="flex-1 relative">
+                            
+                            <!-- Tab: AI Report -->
+                            <div id="content-report" class="tab-content absolute inset-0 overflow-y-auto p-8 prose max-w-none">
+                                <div id="report-content"></div>
+                            </div>
+
+                            <!-- Tab: Timeline -->
+                            <div id="content-timeline" class="tab-content absolute inset-0 overflow-y-auto p-8 hidden">
+                                <div class="relative border-l-1.5 border-app-border ml-3 space-y-8 pb-4" id="timeline-container">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Tab: SQL / Telemetry -->
+                            <div id="content-sql" class="tab-content absolute inset-0 hidden flex flex-col">
+                                <div class="bg-[#1A1A1A] text-[#E5E7EB] font-mono text-sm p-6 flex-1 overflow-y-auto">
+                                    <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                                        <span class="text-xs text-gray-400">Coral Join Execution</span>
+                                        <button onclick="copySql()" class="text-xs text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
+                                            <i class="ph ph-copy"></i> Copy Query
+                                        </button>
+                                    </div>
+                                    <pre><code id="sql-code" class="text-app-accent"></code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Tab: Follow-up Chat -->
+                            <div id="content-chat" class="tab-content absolute inset-0 hidden flex flex-col">
+                                <div id="chat-history" class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+                                    <div class="self-start bg-gray-50 border-1.5 border-app-border rounded-2xl rounded-tl-sm px-6 py-4 text-sm text-app-fg max-w-[80%] leading-relaxed shadow-sm">
+                                        I've analyzed the incident. Ask me any follow-up questions about the logs, telemetry, or commits.
+                                    </div>
+                                </div>
+                                <div class="p-5 border-t-1.5 border-app-border bg-gray-50/50 shrink-0">
+                                    <div class="max-w-4xl mx-auto flex items-center gap-3 bg-white border-1.5 border-app-border rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-app-fg/20 transition-all shadow-sm">
+                                        <input type="text" id="chat-input" placeholder="Ask a follow-up question..." class="flex-1 bg-transparent border-none text-sm focus:ring-0 px-4 outline-none placeholder:text-gray-400" onkeydown="if(event.key==='Enter') sendChat()">
+                                        <button type="button" onclick="sendChat()" class="bg-app-fg text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black transition-colors shrink-0">
+                                            <i class="ph ph-paper-plane-right text-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- RESULTS PANEL -->
-        <div class="lg:col-span-8">
-            
-            <!-- EMPTY STATE -->
-            <div id="empty-state" class="card pixel-border text-center flex flex-col items-center justify-center min-h-[400px]">
-                <div class="text-yellow-500 text-4xl mb-6">?</div>
-                <h3 class="text-xl mb-4">NO ACTIVE INVESTIGATION</h3>
-                <p class="text-zinc-500 max-w-xs mx-auto">USE THE FORM ON THE LEFT TO BEGIN YOUR QUEST FOR THE ROOT CAUSE.</p>
-            </div>
-
-            <!-- LOADING STATE -->
-            <div id="loading" class="hidden card pixel-border text-center py-20">
-                <div class="text-4xl mb-6 animate-spin inline-block">◐</div>
-                <h3 class="text-2xl text-yellow-500 mb-6">INVESTIGATING...</h3>
-                <div id="loading-status" class="text-2xl text-zinc-400 mb-8 italic">SCANNING THE WAVES...</div>
-                <div class="loading-bar-container mx-auto max-w-md">
-                    <div id="loading-bar" class="loading-bar-fill"></div>
-                </div>
-            </div>
-
-            <!-- RESULTS -->
-            <div id="results" class="hidden space-y-6">
-                
-                <!-- STATS -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card pixel-border p-3 text-center">
-                        <div id="stat-sentry" class="text-2xl text-red-500 font-bold">0</div>
-                        <div class="text-[8px] text-zinc-500 font-['Press_Start_2P']">ERRORS</div>
-                    </div>
-                    <div class="card pixel-border p-3 text-center">
-                        <div id="stat-commits" class="text-2xl text-blue-500 font-bold">0</div>
-                        <div class="text-[8px] text-zinc-500 font-['Press_Start_2P']">COMMITS</div>
-                    </div>
-                    <div class="card pixel-border p-3 text-center">
-                        <div id="stat-alerts" class="text-2xl text-yellow-500 font-bold">0</div>
-                        <div class="text-[8px] text-zinc-500 font-['Press_Start_2P']">ALERTS</div>
-                    </div>
-                    <div class="card pixel-border p-3 text-center">
-                        <div id="evidence-score-val" class="text-2xl text-green-500 font-bold">0</div>
-                        <div class="text-[8px] text-zinc-500 font-['Press_Start_2P']">INTEL</div>
-                    </div>
-                </div>
-
-                <!-- AI REPORT -->
-                <div class="card pixel-border">
-                    <div class="card-header flex justify-between">
-                        <div class="flex gap-4">
-                            <span>▶ AI ORACLE REPORT</span>
-                            <div id="data-status-badge" class="hidden text-[8px] text-yellow-500">[LIMITED INTEL]</div>
-                            <div id="ai-status-badge" class="hidden text-[8px] text-red-500">[ORACLE SILENT]</div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyReport()" id="copy-btn" class="pixel-btn text-[6px]">▶ COPY</button>
-                            <button onclick="createGithubIssue()" id="fix-btn" class="pixel-btn text-[6px]">▶ ISSUE</button>
-                            <button onclick="sendToSlack()" id="slack-btn" class="pixel-btn text-[6px]">▶ SLACK</button>
-                        </div>
-                    </div>
-                    
-                    <div id="ai-analysis" class="report-content">
-                        <!-- Populated by JS -->
-                    </div>
-
-                    <div id="report-timestamp" class="text-[10px] text-zinc-600 mt-6 font-mono text-right"></div>
-                </div>
-
-                <!-- CHAT -->
-                <div id="chat-section" class="card pixel-border">
-                    <div class="card-header">▶ FOLLOW-UP INVESTIGATION</div>
-                    <div id="chat-history" class="space-y-4 mb-6 max-h-60 overflow-y-auto p-2"></div>
-                    <div class="flex gap-4">
-                        <input id="chat-input" type="text" placeholder="ASK THE ORACLE..." onkeydown="if(event.key==='Enter') sendChat()">
-                        <button onclick="sendChat()" class="pixel-btn">▶ ASK</button>
-                    </div>
-                </div>
-
-                <!-- EVIDENCE TABS -->
-                <div class="card pixel-border p-0 overflow-hidden">
-                    <div class="flex bg-zinc-900 border-b-2 border-zinc-800 overflow-x-auto">
-                        <button onclick="switchTab('timeline')" id="tab-timeline" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-yellow-500 border-b-4 border-yellow-500 bg-zinc-800">TIMELINE</button>
-                        <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-zinc-500">REPOS</button>
-                        <button onclick="switchTab('sentry')" id="tab-sentry" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-zinc-500">SENTRY</button>
-                        <button onclick="switchTab('commits')" id="tab-commits" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-zinc-500">COMMITS</button>
-                        <button onclick="switchTab('joins')" id="tab-joins" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-zinc-500">JOINS</button>
-                        <button onclick="switchTab('raw')" id="tab-raw" class="tab-btn px-4 py-3 text-[8px] font-['Press_Start_2P'] text-zinc-500">RAW</button>
-                    </div>
-                    
-                    <div class="p-6">
-                        <div id="content-timeline" class="tab-content">
-                            <div id="query-view-timeline" class="terminal-box mb-4 hidden"></div>
-                            <div id="timeline-container" class="space-y-4"></div>
-                        </div>
-                        <div id="content-comparison" class="tab-content hidden">
-                            <div id="query-view-comparison" class="terminal-box mb-4 hidden"></div>
-                            <div id="comparison-container"></div>
-                        </div>
-                        <div id="content-sentry" class="tab-content hidden">
-                            <div id="query-view-sentry_issues" class="terminal-box mb-4 hidden"></div>
-                            <div id="sentry-table"></div>
-                        </div>
-                        <div id="content-commits" class="tab-content hidden">
-                            <div id="query-view-github_commits" class="terminal-box mb-4 hidden"></div>
-                            <div id="commits-table"></div>
-                        </div>
-                        <div id="content-joins" class="tab-content hidden">
-                            <div id="query-view-cross_source_joins" class="terminal-box mb-4 hidden"></div>
-                            <div id="joins-table"></div>
-                        </div>
-                        <div id="content-raw" class="tab-content hidden">
-                            <pre id="raw-json" class="text-zinc-500 text-xs overflow-x-auto"></pre>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        
+        <!-- Toast Notification (Hidden) -->
+        <div id="toast" class="absolute bottom-8 right-8 bg-app-fg text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+            <i id="toast-icon" class="ph ph-check-circle text-green-400 text-lg"></i>
+            <span id="toast-message" class="text-sm font-medium">Broadcasted to #incidents</span>
         </div>
+
     </main>
 
-    <footer class="p-10 text-center text-zinc-700 text-xs border-t-4 border-zinc-900 bg-black">
-        <div class="mb-4">▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓░▓</div>
-        <p>BUILT FOR PIRATES OF THE CORAL-BEAN HACKATHON</p>
-        <p class="mt-2">POWERED BY CORAL + GEMINI AI</p>
-    </footer>
-
-    <div class="bottom-pattern"></div>
-
+    <!-- Client-Side UI Logic -->
     <script>
-        // ==================== TYPEWRITER ====================
-        // No terminal demo in this version, or minimal one if requested
-        
-        // ==================== KEYBOARD SHORTCUT ====================
-        document.getElementById('alert-input').addEventListener('keydown', function(e) {
+        let currentReport = null;
+        let currentAlertText = "";
+
+        // --- Quick Load & Keyboard Shortcuts ---
+        function loadSample(repo, alert) {
+            document.getElementById('repo-input').value = repo;
+            document.getElementById('incident-input').value = alert;
+            document.getElementById('btn-analyze').focus();
+        }
+
+        document.getElementById('incident-input').addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'Enter') {
-                runInvestigation();
+                e.preventDefault();
+                document.getElementById('btn-analyze').click();
             }
         });
 
-        // ==================== INVESTIGATION ====================
-        let currentReport = null;
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-app-fg');
+                btn.classList.add('bg-transparent', 'text-app-muted');
+            });
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-transparent', 'text-app-muted');
+                activeBtn.classList.add('bg-white', 'text-app-fg');
+            }
 
-        async function fetchSamples() {
-            try {
-                const res = await fetch('/samples');
-                const samples = await res.json();
-                const container = document.getElementById('sample-buttons');
-                
-                if (samples && samples.length > 0) {
-                    container.innerHTML = samples.map(s => `
-                        <button 
-                            onclick="loadSample('${escapeHtml(s.repo)}', '${escapeHtml(s.alert)}')"
-                            class="pixel-btn text-[6px] pixel-btn-muted"
-                        >
-                            ▶ ${escapeHtml(s.title)}
-                        </button>
-                    `).join('');
-                }
-            } catch (e) { console.error(e); }
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            const activeContent = document.getElementById(`content-${tabId}`);
+            if (activeContent) activeContent.classList.remove('hidden');
         }
 
-        function loadSample(repo, alert) {
-            document.getElementById('repo-input').value = repo;
-            document.getElementById('alert-input').value = alert;
-            document.getElementById('alert-input').focus();
-        }
+        // --- Investigation Flow ---
+        async function handleInvestigate(e) {
+            if (e) e.preventDefault();
+            
+            const repo = document.getElementById('repo-input').value;
+            const compare = document.getElementById('compare-input').value;
+            const alert = document.getElementById('incident-input').value;
+            
+            if (!repo || !alert) return;
+            currentAlertText = alert;
 
-        async function copyReport() {
-            if (!currentReport || !currentReport.ai_analysis) return;
-            try {
-                await navigator.clipboard.writeText(currentReport.ai_analysis);
-                const btn = document.getElementById('copy-btn');
-                const original = btn.textContent;
-                btn.textContent = '▶ COPIED!';
-                setTimeout(() => btn.textContent = original, 2000);
-            } catch (err) { alert('Failed to copy'); }
-        }
-        
-        async function runInvestigation() {
-            const repoInput = document.getElementById('repo-input');
-            const alertInput = document.getElementById('alert-input');
-            const repo = repoInput.value.trim();
-            const alertText = alertInput.value.trim();
-            
-            if (!repo) { repoInput.focus(); return; }
-            if (!alertText) { alertInput.focus(); return; }
-            
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('results').classList.add('hidden');
-            
-            const bar = document.getElementById('loading-bar');
-            let progress = 0;
-            const loadingStatuses = [
-                'SCANNING THE SEAS...',
-                'DIVING INTO SENTRY...',
-                'CATCHING COMMITS...',
-                'ASSEMBLING THE MAP...',
-                'CONSULTING THE ORACLE...'
-            ];
-            let statusIdx = 0;
-            
-            const interval = setInterval(() => {
-                progress += (100 - progress) * 0.1;
-                if (bar) bar.style.width = progress + '%';
-                
-                statusIdx = (statusIdx + 1) % loadingStatuses.length;
-                const statusEl = document.getElementById('loading-status');
-                if (statusEl) statusEl.textContent = loadingStatuses[statusIdx];
-            }, 1500);
+            // UI State updates
+            document.getElementById('input-container').classList.add('scale-95', 'opacity-50', 'pointer-events-none');
+            document.getElementById('results-area').classList.add('hidden');
+            document.getElementById('results-area').classList.remove('flex');
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('loading-state').classList.add('flex');
             
             try {
                 const response = await fetch('/investigate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        alert: alertText,
-                        repo: repo,
-                        compare_repo: document.getElementById('compare-input').value.trim()
-                    })
+                    body: JSON.stringify({ repo, compare_repo: compare, alert })
                 });
+
+                if (!response.ok) throw new Error('Investigation failed');
+
+                const data = await response.json();
+                displayResults(data, alert);
                 
-                clearInterval(interval);
-                if (bar) bar.style.width = '100%';
-                
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.message || errData.error);
-                }
-                
-                const report = await response.json();
-                currentReport = report;
-                displayResults(report);
-                fetchRecentInvestigations();
-            } catch (error) {
-                clearInterval(interval);
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('empty-state').classList.remove('hidden');
-                alert('Quest Failed: ' + error.message);
+                // Refresh history sidebar silently
+                refreshHistory();
+
+            } catch (err) {
+                console.error(err);
+                showToast("Investigation failed. Please check your inputs.", "ph-x-circle", "text-red-400");
+                document.getElementById('input-container').classList.remove('scale-95', 'opacity-50', 'pointer-events-none');
+                document.getElementById('loading-state').classList.add('hidden');
             }
         }
 
-        function displayResults(report) {
-            const setElText = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = val;
-            };
-
-            const toggleEl = (id, show) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (show) el.classList.remove('hidden');
-                    else el.classList.add('hidden');
-                }
-            };
-
-            toggleEl('loading', false);
-            toggleEl('results', true);
+        function displayResults(data, alert) {
+            currentReport = data;
             
-            const stats = report.stats || {};
-            setElText('stat-sentry', stats.sentry_issues_found || 0);
-            setElText('stat-commits', stats.github_commits_analyzed || 0);
-            setElText('stat-alerts', stats.security_alerts_found || 0);
-            setElText('evidence-score-val', report.evidence_score || 0);
-
-            toggleEl('data-status-badge', ((stats.sentry_issues_found || 0) + (stats.github_commits_analyzed || 0)) < 3);
-
-            const isFallback = report.ai_analysis && (report.ai_analysis.includes('[AI Analysis Failed]') || report.ai_analysis.includes('Fallback Mode'));
-            toggleEl('ai-status-badge', isFallback);
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('loading-state').classList.remove('flex');
             
-            if (report.timestamp) {
-                const d = new Date(report.timestamp);
-                setElText('report-timestamp', "ORACLE GENERATED: " + d.toLocaleString());
+            const results = document.getElementById('results-area');
+            results.classList.remove('hidden');
+            results.classList.add('flex');
+            
+            // Trigger reflow for animation
+            void results.offsetWidth; 
+            results.classList.remove('opacity-0');
+            results.classList.add('opacity-100');
+            
+            // Update Header
+            document.getElementById('btn-broadcast-slack').classList.remove('hidden');
+            document.getElementById('btn-broadcast-slack').classList.add('flex');
+            document.getElementById('current-investigation-title').innerText = data.repo || "Investigation Result";
+
+            // Update Metrics
+            const score = data.evidence_score || 0;
+            document.getElementById('confidence-score').innerText = `${score}%`;
+            document.getElementById('confidence-text').innerText = score > 70 ? "High Certainty" : (score > 40 ? "Medium Certainty" : "Low Certainty");
+            
+            // Update Circle
+            const offset = 138 - (138 * score / 100);
+            document.getElementById('confidence-circle').style.strokeDashoffset = offset;
+
+            document.getElementById('mttr-value').innerText = `~${Math.max(10, 100 - score)}`;
+            
+            // Extract root node from analysis or raw data
+            let rootNode = "Multiple";
+            if (data.raw_data && data.raw_data.sentry_issues && data.raw_data.sentry_issues.length > 0) {
+                rootNode = data.raw_data.sentry_issues[0].project || "Unknown";
             }
-            
-            const analysisContainer = document.getElementById('ai-analysis');
-            if (analysisContainer) {
-                analysisContainer.innerHTML = pixelMarkdown(report.ai_analysis || 'No analysis.');
-                colorizeConfidence();
-            }
+            document.getElementById('root-node-name').innerText = rootNode;
+            document.getElementById('status-badge').innerText = data.error ? "Error" : "Degraded";
 
-            const raw = report.raw_data || {};
-            const meta = report.queries_meta || {};
-            
-            renderTimeline(raw.timeline || [], meta.timeline);
-            renderComparison(raw.comparison || [], meta.comparison);
-            renderSentryTable(raw.sentry_issues || [], meta.sentry_issues);
-            renderCommitsTable(raw.github_commits || [], meta.github_commits);
-            renderJoinsTable(raw.cross_source_joins || [], meta.cross_source_joins);
-            updateQueryHistory(report.live_history || []);
-            
-            setElText('raw-json', JSON.stringify(report, null, 2));
-            switchTab('timeline');
-        }
+            // Update Report Tab
+            document.getElementById('report-content').innerHTML = marked.parse(data.ai_analysis || "");
 
-        function pixelMarkdown(md) {
-            if (!md) return '';
-            const sections = {
-                'Incident Summary': '⚔',
-                'Root Cause': '🔍',
-                'Affected Components': '⚡',
-                'Recommended Actions': '📋',
-                'Prevention Plan': '🛡',
-                'Confidence Score': '🎲'
-            };
+            // Update Timeline Tab
+            renderTimeline(data.raw_data ? data.raw_data.timeline : []);
 
-            let html = '';
-            let currentContent = '';
-            let currentTitle = '';
+            // Update SQL Tab
+            const sqlMeta = data.queries_meta || {};
+            const lastQuery = Object.values(sqlMeta).pop() || { sql: "-- No SQL generated" };
+            document.getElementById('sql-code').innerText = lastQuery.sql;
 
-            const lines = md.split('\n');
-            lines.forEach(line => {
-                let foundHeader = false;
-                for (let title in sections) {
-                    if (line.includes(title)) {
-                        if (currentTitle) {
-                            html += createPixelSection(currentTitle, sections[currentTitle], currentContent);
-                        }
-                        currentTitle = title;
-                        currentContent = '';
-                        foundHeader = true;
-                        break;
-                    }
-                }
-                if (!foundHeader && currentTitle) {
-                    currentContent += line + '\n';
-                }
-            });
-
-            if (currentTitle) {
-                html += createPixelSection(currentTitle, sections[currentTitle], currentContent);
-            }
-
-            // If no specific headers found, fallback to basic conversion
-            if (!html) {
-                return md.replace(/\n/g, '<br>');
-            }
-
-            return html;
-        }
-
-        function createPixelSection(title, icon, content) {
-            return `
-                <div class="report-card staggered-fade">
-                    <div class="report-header-bar">${icon} ${title}</div>
-                    <div class="report-body">${markdownToBasic(content)}</div>
+            // Clear Chat
+            document.getElementById('chat-history').innerHTML = `
+                <div class="self-start bg-gray-50 border-1.5 border-app-border rounded-2xl rounded-tl-sm px-6 py-4 text-sm text-app-fg max-w-[80%] leading-relaxed shadow-sm">
+                    I've analyzed the incident. Ask me any follow-up questions about the logs, telemetry, or commits.
                 </div>
             `;
+
+            switchTab('report');
+            document.getElementById('input-container').classList.remove('scale-95', 'opacity-50', 'pointer-events-none');
+            
+            // Scroll results into view
+            results.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function markdownToBasic(text) {
-            return text
-                .replace(/\*\*(.+?)\*\*/g, '<strong class="text-yellow-500">$1</strong>')
-                .replace(/^\d+\. (.+)$/gm, '<div class="flex gap-2 mt-2"><span>▶</span><span>$1</span></div>')
-                .replace(/^- (.+)$/gm, '<div class="flex gap-2 mt-1"><span class="text-yellow-500">◆</span><span>$1</span></div>')
-                .replace(/\n\n/g, '<br>')
-                .replace(/\n/g, ' ');
-        }
+        function renderTimeline(events) {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+            
+            if (!events || events.length === 0) {
+                container.innerHTML = '<p class="text-sm text-app-muted p-4">No timeline events found.</p>';
+                return;
+            }
 
-        function colorizeConfidence() {
-            // Handled by pixelMarkdown icons and custom sectioning
-        }
-
-        // ==================== CORE Logic ====================
-        
-        async function checkSourceStatus() {
-            try {
-                const res = await fetch('/status');
-                const data = await res.json();
-                const ghStatus = document.getElementById('status-github');
-                const seStatus = document.getElementById('status-sentry');
+            events.forEach(event => {
+                const isError = event.type === 'error';
+                const time = event.ts ? event.ts.split('T')[1].substring(0, 5) : '--:--';
                 
-                if (ghStatus) {
-                    ghStatus.textContent = `◆ GITHUB [${data.github ? 'CONNECTED' : 'OFFLINE'}]`;
-                    ghStatus.className = `badge ${data.github ? 'text-green-500' : 'text-red-500'}`;
-                }
-                if (seStatus) {
-                    seStatus.textContent = `◆ SENTRY [${data.sentry ? 'CONNECTED' : 'OFFLINE'}]`;
-                    seStatus.className = `badge ${data.sentry ? 'text-green-500' : 'text-red-500'}`;
-                }
-            } catch (e) { console.error(e); }
-        }
-        
-        window.addEventListener('load', () => {
-            checkSourceStatus();
-            fetchRecentInvestigations();
-            fetchSamples();
-        });
-
-        async function fetchRecentInvestigations() {
-            try {
-                const res = await fetch('/investigations');
-                const data = await res.json();
-                const container = document.getElementById('recent-investigations-list');
-                if (!container) return;
-                
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="text-zinc-600 italic">Quest log empty.</div>';
-                    return;
-                }
-                
-                container.innerHTML = data.map(inv => `
-                    <div onclick="loadInvestigation(${inv.id})" class="quest-item">
-                        <div class="flex justify-between items-center mb-1 text-[8px]">
-                            <span class="font-bold">QUEST #${String(inv.id).padStart(3, '0')}</span>
-                            <span class="text-zinc-500">${new Date(inv.timestamp).toLocaleTimeString()}</span>
-                        </div>
-                        <div class="text-sm truncate">${escapeHtml(inv.repo)}</div>
+                const item = document.createElement('div');
+                item.className = 'relative pl-6';
+                item.innerHTML = `
+                    <div class="absolute w-3 h-3 ${isError ? 'bg-red-500 border-red-500' : 'bg-app-card border-app-border'} border-1.5 rounded-full -left-[7.5px] top-1"></div>
+                    <p class="text-xs font-semibold text-app-muted mb-0.5">${time} UTC</p>
+                    <div class="${isError ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-app-border'} border-1.5 rounded-xl p-4 inline-block min-w-[300px] max-w-full">
+                        <p class="text-sm font-medium ${isError ? 'text-red-800' : ''}">${escapeHtml(event.msg)}</p>
+                        <p class="text-xs text-app-muted mt-1">${isError ? 'Source: ' : 'Actor: '} ${escapeHtml(event.actor || 'system')}</p>
                     </div>
-                `).join('');
-            } catch (e) { console.error(e); }
+                `;
+                container.appendChild(item);
+            });
         }
 
         async function loadInvestigation(id) {
             try {
-                document.getElementById('empty-state').classList.add('hidden');
-                document.getElementById('results').classList.add('hidden');
-                document.getElementById('loading').classList.remove('hidden');
-                const statusEl = document.getElementById('loading-status');
-                if (statusEl) statusEl.textContent = "RECALLING QUEST DATA...";
+                showToast("Loading investigation...", "ph-spinner animate-spin", "text-app-muted");
+                const response = await fetch(`/investigations/${id}`);
+                if (!response.ok) throw new Error('Failed to fetch');
+                const data = await response.json();
                 
-                const res = await fetch(`/investigations/${id}`);
-                const report = await res.json();
-                displayResults(report);
-            } catch (e) { alert(e.message); }
-        }
+                // Populate inputs if possible (though we don't have all original inputs in the detail view always)
+                document.getElementById('repo-input').value = data.repo || "";
+                document.getElementById('incident-input').value = data.alert_text || "";
+                
+                displayResults(data, data.alert_text || "");
+                
+                // Highlight active in sidebar
+                document.querySelectorAll('.history-item').forEach(el => {
+                    el.classList.remove('border-app-border', 'bg-app-card');
+                    el.classList.add('border-transparent', 'bg-app-card/50');
+                });
+                const active = document.querySelector(`.history-item[data-id="${id}"]`);
+                if (active) {
+                    active.classList.remove('border-transparent', 'bg-app-card/50');
+                    active.classList.add('border-app-border', 'bg-app-card');
+                }
 
-        function updateQueryHistory(history) {
-            const container = document.getElementById('query-history-list');
-            if (!container || !history || history.length === 0) return;
-            
-            container.innerHTML = history.map(q => `
-                <div class="p-3 bg-black border border-zinc-800 font-mono text-[10px] hover:border-yellow-500 transition-all group overflow-hidden">
-                    <div class="flex justify-between items-center mb-1 text-zinc-500">
-                        <span class="text-yellow-500 font-bold">SQL EXEC</span>
-                        <span>${q.execution_time_ms}ms</span>
-                    </div>
-                    <div class="text-green-500 truncate group-hover:whitespace-normal transition-all">${escapeHtml(q.sql)}</div>
-                </div>
-            `).join('');
-        }
-
-        function renderTimeline(events, meta) {
-            const container = document.getElementById('timeline-container');
-            let qViewer = renderQueryViewer('timeline', meta);
-            if (!events || events.length === 0) {
-                container.innerHTML = qViewer + '<p class="text-zinc-600 text-center py-4">NO EVENTS RECORDED</p>';
-                return;
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to load investigation.", "ph-x-circle", "text-red-400");
             }
-
-            let html = qViewer;
-            events.forEach(event => {
-                const isError = event.type === 'error';
-                html += `
-                    <div class="quest-item ${isError ? 'border-red-500' : 'border-blue-500'}">
-                        <div class="flex justify-between text-[8px] mb-2">
-                            <span class="${isError ? 'text-red-500' : 'text-blue-500'}">${event.type}</span>
-                            <span class="text-zinc-500">${new Date(event.ts).toLocaleString()}</span>
-                        </div>
-                        <div class="text-sm">${escapeHtml(event.msg)}</div>
-                        <div class="text-[8px] text-zinc-500 mt-2">ACTOR: ${escapeHtml(event.actor || '???')}</div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
         }
 
-        function renderQueryViewer(id, meta) {
-            if (!meta) return '';
-            return `
-                <div class="mb-4">
-                    <button onclick="toggleQuery('${id}')" class="text-[8px] text-green-500 underline mb-2">
-                        [ VIEW SQL TERMINAL OUTPUT ]
-                    </button>
-                    <div id="query-view-${id}" class="hidden terminal-box text-xs break-all">
-                        > CORAL SQL EXECUTED (${meta.time}ms):<br><br>${escapeHtml(meta.sql)}
-                    </div>
-                </div>
-            `;
-        }
-
-        function toggleQuery(id) {
-            const el = document.getElementById(`query-view-${id}`);
-            if (el) el.classList.toggle('hidden');
-        }
-
-        // Action Functions
-        function createGithubIssue() {
-            if (!currentReport) return;
-            const repo = document.getElementById('repo-input').value.trim();
-            const alertText = document.getElementById('alert-input').value.trim();
-            const body = `## CALYPSO REPORT\n\n${currentReport.ai_analysis}`;
-            const url = `https://github.com/${repo}/issues/new?title=Investigation: ${encodeURIComponent(alertText)}&body=${encodeURIComponent(body)}`;
-            window.open(url, '_blank');
-        }
-
-        async function sendToSlack() {
-            if (!currentReport) return;
-            if (!confirm("SEND TO SLACK?")) return;
+        async function refreshHistory() {
             try {
-                const res = await fetch('/slack', {
+                const response = await fetch('/investigations');
+                const history = await response.json();
+                const list = document.getElementById('history-list');
+                const header = '<div class="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Recent</div>';
+                
+                list.innerHTML = header + history.map(inv => `
+                    <button onclick="loadInvestigation(${inv.id})" class="history-item w-full text-left p-3 rounded-xl border-1.5 border-transparent hover:border-app-border bg-app-card/50 hover:bg-app-card transition-all group" data-id="${inv.id}">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-medium truncate pr-2">${escapeHtml(inv.repo)}</span>
+                            <span class="text-[10px] text-app-muted shrink-0 mt-0.5">${inv.timestamp.substring(0,10)}</span>
+                        </div>
+                        <div class="text-xs text-app-muted truncate">${escapeHtml(inv.alert_text)}</div>
+                    </button>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to refresh history", e);
+            }
+        }
+
+        // --- Reset UI ---
+        function resetUI() {
+            document.getElementById('investigation-form').reset();
+            document.getElementById('results-area').classList.add('hidden', 'opacity-0');
+            document.getElementById('results-area').classList.remove('flex');
+            document.getElementById('btn-broadcast-slack').classList.add('hidden');
+            document.getElementById('btn-broadcast-slack').classList.remove('flex');
+            document.getElementById('current-investigation-title').innerText = "Workspace";
+            document.getElementById('incident-input').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Slack Integration ---
+        document.getElementById('btn-broadcast-slack').addEventListener('click', async function() {
+            if (!currentReport) return;
+            
+            this.classList.add('opacity-50', 'pointer-events-none');
+            try {
+                const response = await fetch('/slack', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentReport)
                 });
-                if (res.ok) alert("SENT!");
-                else alert("FAILED");
-            } catch (err) { alert(err.message); }
-        }
+                
+                if (response.ok) {
+                    showToast("Broadcasted to #incidents", "ph-check-circle", "text-green-400");
+                } else {
+                    showToast("Slack integration not configured.", "ph-warning-circle", "text-amber-400");
+                }
+            } catch (e) {
+                showToast("Failed to broadcast.", "ph-x-circle", "text-red-400");
+            } finally {
+                this.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        });
 
-        async function sendChat() {
-            const input = document.getElementById('chat-input');
-            const question = input.value.trim();
-            if (!question || !currentReport) return;
+        function showToast(message, iconClass, iconColorClass) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-message');
             
-            const history = document.getElementById('chat-history');
-            history.innerHTML += `<div class="text-right"><div class="inline-block bg-zinc-800 p-3 pixel-border text-sm max-w-[80%]">YOU: ${escapeHtml(question)}</div></div>`;
-            input.value = '';
+            icon.className = `ph ${iconClass} ${iconColorClass} text-lg`;
+            msg.innerText = message;
             
-            const thinking = document.createElement('div');
-            thinking.className = 'text-left text-zinc-500 animate-pulse text-xs py-2';
-            thinking.textContent = '> CONSULTING THE ORACLE...';
-            history.appendChild(thinking);
-            history.scrollTop = history.scrollHeight;
-            
-            try {
-                const res = await fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, context_data: currentReport.raw_data, alert: document.getElementById('alert-input').value })
-                });
-                const data = await res.json();
-                history.removeChild(thinking);
-                history.innerHTML += `<div class="text-left"><div class="inline-block bg-zinc-900 border-2 border-yellow-500 p-3 text-sm max-w-[90%]">ORACLE: ${markdownToBasic(data.answer)}</div></div>`;
-                history.scrollTop = history.scrollHeight;
-            } catch (e) { alert(e.message); }
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
         }
 
-        function renderComparison(data) {
-            const container = document.getElementById('comparison-container');
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-center py-4">SIDE-BY-SIDE REPO INTEL NOT FOUND</p>';
-                return;
-            }
-            container.innerHTML = `<table class="w-full text-xs text-left">
-                <tr class="text-yellow-500 border-b-2 border-zinc-800">
-                    <th class="p-2">REPO</th><th class="p-2">COMMIT</th><th class="p-2">TS</th>
-                </tr>
-                ${data.map(item => `
-                    <tr class="border-b border-zinc-900 hover:bg-zinc-800">
-                        <td class="p-2 text-blue-400 font-bold">${escapeHtml(item.repository)}</td>
-                        <td class="p-2">${escapeHtml(item.msg)}</td>
-                        <td class="p-2 text-zinc-500">${new Date(item.ts).toLocaleTimeString()}</td>
-                    </tr>
-                `).join('')}
-            </table>`;
-        }
-
-        function renderSentryTable(issues) {
-            const container = document.getElementById('sentry-table');
-            if (!issues || issues.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-center py-4">NO ERRORS FOUND</p>';
-                return;
-            }
-            container.innerHTML = `<table class="w-full text-xs text-left">
-                <tr class="text-red-500 border-b-2 border-zinc-800">
-                    <th class="p-2">LVL</th><th class="p-2">TITLE</th><th class="p-2">PROJECT</th>
-                </tr>
-                ${issues.map(i => `
-                    <tr class="border-b border-zinc-900 hover:bg-zinc-800">
-                        <td class="p-2 font-bold">${i.level}</td>
-                        <td class="p-2">${escapeHtml(i.title)}</td>
-                        <td class="p-2 text-zinc-500">${escapeHtml(i.project)}</td>
-                    </tr>
-                `).join('')}
-            </table>`;
-        }
-
-        function renderCommitsTable(commits) {
-            const container = document.getElementById('commits-table');
-            if (!commits || commits.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-center py-4">NO COMMITS FOUND</p>';
-                return;
-            }
-            container.innerHTML = `<table class="w-full text-xs text-left">
-                <tr class="text-blue-500 border-b-2 border-zinc-800">
-                    <th class="p-2">SHA</th><th class="p-2">MSG</th><th class="p-2">ACTOR</th>
-                </tr>
-                ${commits.map(c => `
-                    <tr class="border-b border-zinc-900 hover:bg-zinc-800">
-                        <td class="p-2 text-zinc-500 font-mono">${c.sha.substring(0, 7)}</td>
-                        <td class="p-2">${escapeHtml(c.commit_message)}</td>
-                        <td class="p-2 text-blue-400">${escapeHtml(c.author_login)}</td>
-                    </tr>
-                `).join('')}
-            </table>`;
-        }
-
-        function renderJoinsTable(joins) {
-            const container = document.getElementById('joins-table');
-            if (!joins || joins.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-center py-4">NO CORRELATIONS FOUND</p>';
-                return;
-            }
-            container.innerHTML = `<table class="w-full text-xs text-left">
-                <tr class="text-yellow-500 border-b-2 border-zinc-800">
-                    <th class="p-2">COMMIT</th><th class="p-2">LINKED ERROR</th>
-                </tr>
-                ${joins.map(j => `
-                    <tr class="border-b border-zinc-900 hover:bg-zinc-800">
-                        <td class="p-2 text-blue-400 font-bold">${j.sha.substring(0, 7)}</td>
-                        <td class="p-2 text-red-400">${escapeHtml(j.sentry_error)}</td>
-                    </tr>
-                `).join('')}
-            </table>`;
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById(`content-${tabName}`);
-            if (target) target.classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('text-yellow-500', 'border-yellow-500', 'bg-zinc-800');
-                btn.classList.add('text-zinc-500');
-            });
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-zinc-500');
-                activeBtn.classList.add('text-yellow-500', 'border-yellow-500', 'bg-zinc-800');
-            }
-        }
-
+        // --- Follow-up Chat Logic ---
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const question = input.value.trim();
+            if (!question || !currentReport) return;
+
+            const history = document.getElementById('chat-history');
+            history.innerHTML += `
+                <div class="self-end bg-app-fg text-white rounded-2xl rounded-tl-sm px-6 py-4 text-sm max-w-[80%] leading-relaxed shadow-sm">
+                    ${escapeHtml(question)}
+                </div>
+            `;
+            input.value = '';
+
+            const thinkingId = 'think-' + Date.now();
+            history.innerHTML += `
+                <div id="${thinkingId}" class="self-start flex items-center gap-2 text-app-muted text-xs uppercase tracking-wider px-2 py-1">
+                    <i class="ph ph-spinner animate-spin text-base"></i> AI is thinking...
+                </div>
+            `;
+            history.scrollTop = history.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        context_data: currentReport.raw_data,
+                        alert: currentAlertText
+                    })
+                });
+
+                const thinkingEl = document.getElementById(thinkingId);
+                if(thinkingEl) thinkingEl.remove();
+
+                if (!response.ok) throw new Error('Chat failed');
+                const data = await response.json();
+                
+                history.innerHTML += `
+                    <div class="self-start bg-gray-50 border-1.5 border-app-border rounded-2xl rounded-tl-sm px-6 py-4 text-sm text-app-fg max-w-[80%] leading-relaxed shadow-sm prose">
+                        ${marked.parse(data.answer || "")}
+                    </div>
+                `;
+                history.scrollTop = history.scrollHeight;
+
+            } catch (err) {
+                const thinkingEl = document.getElementById(thinkingId);
+                if(thinkingEl) thinkingEl.remove();
+                showToast("Chat failed.", "ph-x-circle", "text-red-400");
+            }
+        }
+
+        function copySql() {
+            const code = document.getElementById('sql-code').innerText;
+            navigator.clipboard.writeText(code);
+            showToast("SQL copied to clipboard", "ph-copy", "text-app-accent");
+        }
+
+        // Initialize status
+        window.onload = async () => {
+            try {
+                const res = await fetch('/status');
+                const status = await res.json();
+                const el = document.getElementById('system-status');
+                if (status.github && status.sentry) {
+                    el.innerText = "◈ ALL SYSTEMS ONLINE";
+                    el.classList.remove('text-app-muted/60');
+                    el.classList.add('text-green-600');
+                } else {
+                    el.innerText = "◈ DEGRADED CONNECTIVITY";
+                    el.classList.add('text-amber-600');
+                }
+            } catch (e) {}
+        };
     </script>
 </body>
 </html>

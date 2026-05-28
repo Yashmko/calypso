@@ -4,6 +4,7 @@ CALYPSO - Flask Web Server
 """
 
 import os
+import json
 import logging
 from flask import Flask, render_template, request, jsonify
 from agent import investigate, chat_followup
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 init_db()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24).hex())
 
 
 @app.route("/samples")
@@ -39,8 +40,13 @@ def get_samples():
 
 @app.route("/")
 def index():
-    """Serve the main UI page."""
-    return render_template("index.html")
+    """Serve the main UI page with investigation history."""
+    try:
+        history = get_recent_investigations(20)
+        return render_template("index.html", history=history)
+    except Exception as e:
+        logger.error(f"Error loading history: {e}")
+        return render_template("index.html", history=[])
 
 
 @app.route("/slack", methods=["POST"])
@@ -95,11 +101,14 @@ def run_investigation():
         
         # Run the investigation
         report = investigate(alert_description, repo_full_name, compare_repo)
+        report["alert_text"] = alert_description
+        report["repo"] = repo_full_name
         
         # Save to database
         status = "error" if "Error" in report.get("ai_analysis", "") else "success"
-        save_investigation(repo_full_name, alert_description, report, status)
+        inv_id = save_investigation(repo_full_name, alert_description, report, status)
         
+        report["id"] = inv_id
         return jsonify(report)
         
     except Exception as e:
