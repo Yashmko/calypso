@@ -26,8 +26,8 @@ else:
         print(f"Gemini API error (init): {str(e)}")
         client = None
 
-# Use gemini-1.5-flash for fast, free-tier responses
-MODEL_ID = "gemini-1.5-flash"
+# Use gemini-2.5-flash for latest performance
+MODEL_ID = "gemini-2.5-flash"
 
 
 def generate_incident_report(alert_description: str, github_data: dict, sentry_data: dict) -> str:
