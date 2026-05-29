@@ -31,351 +31,264 @@
 
 ---
 
-## 🏗️ Architecture
+# 🚀 CALYPSO
+
+**AI-Powered Enterprise Incident Investigation Engine**
+
+She knows the waters. She sees the wrecks.  
+She tells you what broke before you even ask.
+
+<br/>
+
+**🌐 Live Demo:** https://calypso-bre2.onrender.com/  
+**📦 GitHub Repository:** https://github.com/Yashmko/calypso  
+**🏴‍☠️ Track:** Pirates of the Coral-bean Hackathon · WeMakeDevs · Enterprise Agent
+
+</div>
+
+---
+
+## ⚡ What is CALYPSO?
+
+CALYPSO is an AI-powered incident investigation platform built to help engineering teams reduce Mean Time To Resolution (MTTR).
+
+Instead of manually jumping between GitHub, Sentry, logs, deployment history, and telemetry dashboards, CALYPSO correlates the evidence for you and generates a structured investigation report.
+
+It helps teams answer the questions that matter most during an incident:
+
+- What changed?
+- What broke?
+- Which commit likely caused it?
+- What evidence supports that conclusion?
+- What should we do next?
+
+CALYPSO transforms fragmented operational data into a single investigation workflow.
+
+---
+
+## 🚨 The Problem
+
+When production breaks, engineers waste time switching between tools.
+
+GitHub tells you what changed.  
+Sentry tells you what failed.  
+Slack tells you what people said.  
+Logs tell you fragments.  
+Your brain tries to connect the rest.
+
+That context switching costs precious minutes during a real incident.
+
+CALYPSO collapses those signals into one AI-assisted incident investigation flow.
+
+---
+
+## 🌊 Why CALYPSO Matters
+
+Most tools show data.
+
+CALYPSO investigates.
+
+It combines Coral-powered retrieval, Gemini reasoning, and a clean investigation interface to produce:
+
+- Root Cause Analysis
+- Incident Timelines
+- Confidence Scoring
+- Affected Components
+- Recommended Actions
+- Prevention Plans
+- Investigation History
+- Follow-up AI Chat
+
+It is designed for real engineering workflows, not just pretty dashboards.
+
+---
+
+## 🌐 Live Production Deployment
+
+CALYPSO is publicly deployed and accessible here:
+
+**https://calypso-bre2.onrender.com/**
+
+This live deployment demonstrates:
+
+- End-to-end incident investigation
+- AI-generated root cause analysis
+- Cross-source evidence correlation
+- Timeline reconstruction
+- Investigation history
+- Follow-up chat
+- Enterprise-style reporting
+
+---
+
+## 🧠 How CALYPSO Works
 
 ```text
-                                  ┌─────────────────┐
-                                  │      USER       │
-                                  └────────┬────────┘
-                                           │
-                                  ┌────────▼────────┐
-                                  │   Flask Web UI  │
-                                  └────────┬────────┘
-                                           │
-                                  ┌────────▼────────┐
-                                  │    agent.py     │
-                                  └────┬──────┬─────┘
-                                       │      │
-            ┌──────────────────────────┘      └──────────────────────────┐
-            │                                                            │
-    ┌───────▼───────┐                                            ┌───────▼───────┐
-    │   queries.py  │                                            │   gemini.py   │
-    └───────┬───────┘                                            └───────┬───────┘
-            │                                                            │
-    ┌───────▼───────┐                                            ┌───────▼───────┐
-    │     CORAL     │                                            │   Gemini API  │
-    └────┬──────┬───┘                                            └───────────────┘
-         │      │
-    ┌────▼───┐  └────┌───▼────┐
-    │ GitHub │       │ Sentry │
-    └────────┘       └────────┘
-```
+Alert / Incident Description
+          ↓
+       Flask UI
+          ↓
+       agent.py
+      /        \
+queries.py    gemini.py
+     ↓            ↓
+   Coral        Gemini API
+     ↓
+ GitHub + Sentry data
+          ↓
+   report.py formats output
+          ↓
+   Investigation report in UI
+High-Level Flow
+The user enters an alert or incident description.
+agent.py coordinates the investigation.
+queries.py runs Coral SQL queries against connected sources.
+Coral retrieves evidence from GitHub and Sentry.
+gemini.py analyzes the evidence and generates reasoning.
+report.py formats the output into a structured incident report.
+The frontend displays the analysis, timeline, query logs, and history.
+🔥 How Coral Powers CALYPSO
 
----
+Coral is the investigation data layer of CALYPSO.
 
-## 💎 Why CALYPSO Wins
-CALYPSO isn't just another dashboard; it's a reasoning engine built for the heat of production incidents.
+It lets the platform query engineering sources as if they were local tables, which means CALYPSO can correlate commits, errors, timelines, and service signals without manual digging.
 
-- **🚢 Cross-Source Investigation**: The only tool that joins Sentry's fatal errors with GitHub's commit stream using standard SQL.
-- **🧠 AI Reasoning**: Powered by Google's Gemini Flash, CALYPSO doesn't just show data—it analyzes correlations to suggest specific root causes.
-- **🛰️ Telemetry First**: Every investigation shows you the exact Coral SQL queries executed, bringing transparency to AI actions.
-- **💾 Persistence**: Built-in SQLite database tracks all past investigations for easy post-mortem reviews.
-- **📢 Slack Integration**: Instant report sharing to keep the entire team in the loop.
-- **☁️ Docker Ready**: Fully containerized and optimized to run on a lightweight 2GB RAM instance.
+Coral is used for:
 
----
-
-## 🌊 The Problem
-
-When production breaks at 3am, engineers open **5 different tabs**:
-
-```
-GitHub    →  what was just deployed?
-Sentry    →  what errors are firing?
-Slack     →  what did the team say?
-Datadog   →  what do the metrics say?
-Brain     →  what do I actually do now?
-```
-
-That context-switching costs **precious minutes** during an incident.  
-CALYPSO collapses all of it into **one SQL query and one AI report.**
-
----
-
-## ⚡ How It Works
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CALYPSO                              │
-│                                                             │
-│  1. You paste an alert description                          │
-│  2. Coral queries GitHub + Sentry via real SQL              │
-│  3. Gemini AI correlates commits with errors                │
-│  4. You get a full incident report in ~30 seconds           │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### ⚡ How Coral Powers CALYPSO
-CALYPSO uses **Coral's SQL interface** to query multiple data sources as if they were local tables. Here are the real queries driving our analysis:
-
-#### 1. The Cross-Source Join (The "Aha!" Moment)
-We join GitHub commits with Sentry issues based on temporal overlap:
-```sql
+Cross-source joins between GitHub and Sentry
+Unified incident timelines
+Source status checks
+Transparent query execution
+Investigation telemetry
+Live evidence retrieval
+Example Coral Queries
+1. Cross-Source Join
 SELECT c.sha, c.commit__message, s.title as sentry_error
 FROM github.commits c
 JOIN sentry.issues s ON s.first_seen >= c.commit__author__date
 WHERE c.owner = 'Yashmko' AND c.repo = 'calypso' AND s.level = 'fatal'
-ORDER BY s.first_seen DESC LIMIT 10;
-```
-
-#### 2. The Unified Incident Timeline
-We use `UNION ALL` to create a chronological stream of disparate events:
-```sql
+ORDER BY s.first_seen DESC
+LIMIT 10;
+2. Unified Incident Timeline
 SELECT 'commit' as type, commit__author__date as ts, commit__message as msg
 FROM github.commits
 UNION ALL
 SELECT 'error' as type, first_seen as ts, title as msg
 FROM sentry.issues
-ORDER BY ts DESC LIMIT 20;
-```
-
-#### 3. Multi-Repo Comparison
-Comparing health across different services during a global outage:
-```sql
+ORDER BY ts DESC
+LIMIT 20;
+3. Multi-Repo Comparison
 SELECT 'repo-a' as repository, sha, commit__message as msg, commit__author__date as ts
 FROM github.commits WHERE owner = 'org' AND repo = 'repo-a'
 UNION ALL
 SELECT 'repo-b' as repository, sha, commit__message as msg, commit__author__date as ts
 FROM github.commits WHERE owner = 'org' AND repo = 'repo-b'
-ORDER BY ts DESC LIMIT 10;
-```
-
-### Full Data Flow
-
-```
-  Alert Description (user input)
-           │
-           ▼
-     ┌──────────┐
-     │ agent.py │  ← orchestrates everything
-     └────┬─────┘
-          │
-     ┌────▼──────────────────────────────────────────┐
-     │              queries.py                       │
-     │                                               │
-     │   coral sql --format json "SELECT ..."        │
-     │              │              │                 │
-     │       ┌──────▼──────┐ ┌────▼──────┐           │
-     │       │   GitHub    │ │  Sentry   │           │
-     │       │  · commits  │ │  · issues │           │
-     │       │  · PRs      │ │  · errors │           │
-     │       │  · alerts   │ │  · fatal  │           │
-     │       └──────┬──────┘ └────┬──────┘           │
-     │              │             │                  │
-     │              └──────┬──────┘                  │
-     │                     │  JOIN + UNION ALL       │
-     │                     ▼                         │
-     │             combined evidence                 │
-     └─────────────────────┬─────────────────────────┘
-                           │
-                    ┌──────▼───────┐
-                    │  gemini.py   │  ← AI analysis
-                    │              │
-                    │  Prompt →    │
-                    │  Gemini API  │
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │  report.py   │  ← format & structure
-                    └──────┬───────┘
-                           │
-                           ▼
-               ┌───────────────────────┐
-               │   Incident Report     │
-               │  · Incident Summary   │
-               │  · Root Cause         │
-               │  · Affected Components│
-               │  · Recommended Actions│
-               │  · Prevention Plan    │
-               │  · Confidence Score   │
-               └───────────────────────┘
-```
-
----
-
-## ✨ Features
-
-| Feature | What It Does | Coral Superpower Used |
-|---|---|---|
-| 🔍 **Incident Investigator** | Full AI report from one alert | Parallel queries across sources |
-| 🕒 **Evidence Timeline** | Commits + errors in one stream | `UNION ALL` across GitHub + Sentry |
-| ⚔️ **Multi-Repo Comparison** | Compare two repos side by side | Cross-repo `UNION ALL` query |
-| 👁️ **Query Viewer** | See exact SQL + execution time | Full Coral transparency |
-| 📜 **Live Query History** | Terminal of last 5 SQL executions | Real-time Coral telemetry |
-| 🟢 **Source Status Badges** | Live GitHub + Sentry ping on load | Lightweight health-check queries |
-| 💬 **Follow-up Chat** | Ask the agent follow-up questions | Contextual AI over Coral results |
-| 🛠️ **Create Fix Issue** | One-click GitHub Issue from report | Closes the investigation loop |
-
----
-
-## 🗂️ Project Structure
-
-```
-calypso/
-│
-├── 🧠  agent.py              # Main orchestrator
-├── 🔌  queries.py            # All Coral SQL (real subprocess calls)
-├── 🤖  gemini.py             # Gemini 1.5 Flash integration
-├── 📋  report.py             # JSON report formatter
-├── 💾  db.py                 # SQLite persistence layer
-├── 🌐  app.py                # Flask server (port 5000)
-│
-├── templates/
-│   └── 🎨  index.html        # Dark UI — Tailwind CDN, vanilla JS
-│
-├── .env                      # Your secrets (never committed)
-├── .env.example              # Template for others
-├── .gitignore                # Keeps .env safe
-├── requirements.txt          # flask, google-genai, python-dotenv
-├── sample_incidents.json     # Predefined demo scenarios
-├── README.md                 # You are here
-└── SUBMISSION.md             # Hackathon submission copy
-```
-
----
-
-## 🔥 The Coral SQL
-
-Every piece of data in CALYPSO flows through real `coral sql` subprocess calls.  
-No mock data. No hardcoded JSON. Real SQL. Real results.
-
-### Sentry Issues
-```sql
-SELECT title, culprit, level, status, first_seen, last_seen
-FROM sentry.issues
-WHERE level IN ('error', 'fatal')
-ORDER BY last_seen DESC
-LIMIT 10
-```
-
-### Recent GitHub Commits
-```sql
-SELECT sha, commit__message, author__login, html_url, created_at
-FROM github.commits
-WHERE owner = :owner AND repo = :repo
-ORDER BY commit__author__date DESC
-LIMIT 10
-```
-
-### 🏆 Cross-Source JOIN — The Money Shot
-```sql
-SELECT
-    c.sha,
-    c.commit__message,
-    c.author__login,
-    s.title      AS sentry_error,
-    s.level      AS severity,
-    s.first_seen AS error_time,
-    c.created_at AS commit_time
-FROM github.commits c
-JOIN sentry.issues s
-  ON s.first_seen >= c.created_at
-WHERE s.level = 'fatal'
-ORDER BY s.first_seen DESC
-LIMIT 10
-```
-
-### Evidence Timeline — UNION ALL
-```sql
-SELECT 'commit' AS type, sha    AS id, commit__message AS message, created_at  AS ts
-FROM github.commits
-WHERE owner = :owner AND repo = :repo
-
-UNION ALL
-
-SELECT 'error'  AS type, id,          title           AS message, first_seen   AS ts
-FROM sentry.issues
-WHERE level IN ('error', 'fatal')
-
 ORDER BY ts DESC
-LIMIT 20
-```
+LIMIT 10;
 
----
+Coral provides the evidence.
+Gemini provides the reasoning.
+CALYPSO turns both into a usable investigation workflow.
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.8+
-- [Coral CLI](https://withcoral.com) installed
-- GitHub source connected → `coral source add --interactive github`
-- Sentry source connected → `coral source add --interactive sentry`
-- Gemini API key → [aistudio.google.com](https://aistudio.google.com) (free, no credit card)
-
-### Install & Run
-
-```bash
-# Clone
+✨ Key Features
+AI Root Cause Analysis
+Generates structured incident reports from a single alert.
+Evidence Timeline
+Combines commits and errors into one chronological view.
+Confidence Scoring
+Scores the strength of the evidence and reasoning.
+GitHub Correlation
+Detects relevant commits and recent code changes.
+Live Coral SQL Telemetry
+Lets you inspect the exact queries used during an investigation.
+Investigation History
+Stores and reloads previous investigations.
+Follow-up AI Chat
+Ask questions after the initial report is generated.
+Slack Integration
+Broadcasts reports to the team when needed.
+Public Deployment
+Available online through Render.
+🧩 Project Structure
+calypso/
+├── agent.py              # Main investigation orchestrator
+├── queries.py            # Coral SQL execution and source queries
+├── gemini.py             # Gemini integration and fallback logic
+├── report.py             # Report formatting and Slack formatting
+├── db.py                 # SQLite persistence layer
+├── app.py                # Flask web server
+├── templates/
+│   └── index.html        # Frontend UI
+├── sample_incidents.json # Demo incident scenarios
+├── requirements.txt      # Python dependencies
+├── .env.example          # Environment variable template
+├── .gitignore            # Secret protection
+└── README.md             # You are here
+🛠️ Tech Stack
+Layer	Choice	Why
+Query Engine	Coral CLI	SQL over GitHub + Sentry, no ETL
+AI	Gemini API	Fast reasoning and report generation
+Backend	Python + Flask	Lightweight and hackathon-friendly
+Frontend	HTML + Tailwind CDN + Vanilla JS	Zero build step, fast iteration
+Persistence	SQLite	Simple local storage for investigations
+Deployment	Render	Clean production deployment
+OS	Arch Linux	Because chaos builds character
+🚀 Quick Start
+Prerequisites
+Python 3.8+
+Coral CLI installed and connected
+GitHub source connected
+Sentry source connected
+Gemini API key
+Install
 git clone https://github.com/Yashmko/calypso.git
 cd calypso
-
-# Install
-pip install -r requirements.txt --break-system-packages
-
-# Configure
+pip install -r requirements.txt
+Configure
 cp .env.example .env
-nano .env   # add your GEMINI_API_KEY
+nano .env
 
-# Launch
+Add:
+
+GEMINI_API_KEY=your_gemini_api_key
+SLACK_WEBHOOK_URL=your_slack_webhook_url
+FLASK_SECRET_KEY=your_random_secret
+Run
 python app.py
 
-# Open
-# http://localhost:5000
-```
+Open:
 
-### Environment Variables
+http://localhost:5000
+🔐 Environment Variables
+Variable	Required	Where to Get	Description
+GEMINI_API_KEY	Yes	Google AI Studio	Gemini API key
+GOOGLE_API_KEY	Optional	Google AI Studio	Alternate Gemini key name
+SLACK_WEBHOOK_URL	Optional	Slack Incoming Webhooks	Sends reports to Slack
+FLASK_SECRET_KEY	Yes	Generate locally	Flask session/security secret
+SENTRY_DSN	Optional	Sentry	Observability integration
+🎮 Using CALYPSO
+Open the app.
+Enter your GitHub repo in owner/repo format.
+Optionally enter a second repo for comparison.
+Paste your alert or incident description.
+Hit Analyze Incident or press Ctrl + Enter.
+Read the investigation report.
+Inspect the timeline and Coral SQL telemetry.
+Ask follow-up questions in the chat tab.
+Share or export the report as needed.
+📊 API Reference
+POST /investigate
 
-| Variable | Required | Where to Get | Description |
-|---|---|---|---|
-| `GEMINI_API_KEY` | ✅ Yes | [aistudio.google.com](https://aistudio.google.com/app/apikey) | API key for Gemini 1.5 Flash |
-| `SLACK_WEBHOOK_URL` | ✅ Yes | [Incoming Webhooks](https://api.slack.com/messaging/webhooks) | Webhook URL to send reports to Slack |
+Request
 
----
-
-## 🎮 Using CALYPSO
-
-```
-Step 1 → Open http://localhost:5000
-Step 2 → Enter your GitHub repo (owner/repo)
-Step 3 → Optionally enter a second repo for comparison
-Step 4 → Paste your alert or incident description
-Step 5 → Hit Investigate (or Ctrl+Enter)
-Step 6 → Read the 5-section incident report
-Step 7 → Click "View Coral Query" to see live SQL
-Step 8 → Ask follow-up questions in the chat
-Step 9 → Click "Create Fix Issue" to log it in GitHub
-```
-
----
-
-## 🏗️ Tech Stack
-
-| Layer | Choice | Why |
-|---|---|---|
-| Query Engine | Coral CLI | SQL over GitHub + Sentry, no ETL |
-| AI | Gemini 1.5 Flash | Free tier, fast, excellent reasoning |
-| Backend | Python + Flask | Lightweight, 2GB RAM friendly |
-| Frontend | HTML + Tailwind CDN + Vanilla JS | Zero npm, zero build step |
-| OS | Arch Linux | Because we don't need more |
-
----
-
-## 📊 API Reference
-
-### `POST /investigate`
-
-**Request:**
-```json
 {
   "alert": "Database timeout errors spiking in production API",
   "repo": "your-org/your-repo",
   "compare_repo": "your-org/other-repo"
 }
-```
 
-**Response:**
-```json
+Response
+
 {
   "timestamp": "2026-05-25T03:00:00+00:00",
   "ai_analysis": "## Incident Summary\n...",
@@ -391,52 +304,47 @@ Step 9 → Click "Create Fix Issue" to log it in GitHub
   "queries_meta": {},
   "raw_data": {}
 }
-```
+GET /status
 
-### `GET /status`
-Returns live Coral source connectivity for the header badges.
+Returns live source status for the header badges.
 
-```json
 {
   "github": "connected",
   "sentry": "connected"
 }
-```
+🏆 Why CALYPSO Stands Out
+Judging Criterion	What CALYPSO Delivers
+Impact	Reduces incident investigation time
+Creativity	Sea-themed AI investigation engine with Coral reasoning
+Technical Depth	Real Coral SQL calls, joins, timelines, and telemetry
+Aesthetics	Polished modern dashboard with a distinctive identity
+Best Use of Coral	Coral is the center of the investigation workflow
+Practical Value	Useful for real on-call and postmortem workflows
+📸 Screenshots
 
----
+Add your screenshots here before submission.
 
-## 🏆 Why CALYPSO Wins
+![Dashboard](screenshots/dashboard.png)
+![Report](screenshots/report.png)
+![Timeline](screenshots/timeline.png)
+![SQL](screenshots/sql.png)
+👨‍💻 Builder
 
-| Judging Criterion | What CALYPSO Delivers |
-|---|---|
-| 🎯 **Impact** | Solves on-call incident investigation — every eng team's pain |
-| 🧠 **Creativity** | Named after a sea goddess, fits pirate theme, cross-source SQL joins |
-| ⚙️ **Technical Depth** | Real subprocess Coral calls, UNION ALL, JOIN, live telemetry |
-| 🎨 **Aesthetics** | Glassmorphism dark UI, typewriter SQL terminal, smooth animations |
-| 🔗 **Best Use of Coral** | Query viewer, live history, source badges — Coral is the star |
-| 📈 **Learning Curve** | Solo, 2GB RAM, Arch Linux, all free tools — built it anyway |
+Built solo by @Yashmko on a modest machine, with a lot of stubbornness and not enough sleep.
 
----
+No paid cloud intelligence.
+No giant team.
+Just Coral, Python, Flask, and a refusal to ship something boring.
 
-## 🧑‍💻 The Builder
+📄 License
 
-Built solo by **[@Yashmko](https://github.com/Yashmko)** on a **2GB RAM Arch Linux laptop.**
+MIT — use it, fork it, improve it.
 
-No paid subscriptions. No cloud services. No team.  
-Just Coral, Python, and stubbornness.
+🏴‍☠️ Final Note
 
-> *"If it runs on my machine, it runs anywhere. That's the point of Coral."*
+CALYPSO is an AI-powered incident investigation engine that turns fragmented operational data into clear, actionable reasoning.
 
----
-
-## 📄 License
-
-MIT — use it, fork it, ship it.
-
----
-
-<div align="center">
-
+She knows the waters. She sees the wrecks. She tells you what broke before you even ask.
 🏴‍☠️ **CALYPSO** · Built for the Pirates of the Coral-bean Hackathon · WeMakeDevs · May 2026
 
 *She knows the waters. She sees the wrecks. She tells you what broke before you even ask.*
