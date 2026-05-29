@@ -23,7 +23,7 @@ else:
     try:
         client = genai.Client(api_key=API_KEY)
     except Exception as e:
-        logger.error(f"Failed to initialize Gemini client: {e}")
+        print(f"Gemini API error (init): {str(e)}")
         client = None
 
 # Use gemini-1.5-flash for fast, free-tier responses
@@ -86,7 +86,7 @@ Format your response in clean markdown. Be thorough but concise. Focus on action
 """
 
         if not client:
-            logger.error("Gemini client not initialized (missing API key). Using fallback.")
+            print("Gemini API error: Gemini client not initialized (missing API key)")
             return _generate_fallback_report(alert_description)
             
         response = client.models.generate_content(
@@ -97,11 +97,11 @@ Format your response in clean markdown. Be thorough but concise. Focus on action
         if response and response.text:
             return response.text
         else:
-            logger.error("Gemini returned empty response")
+            print("Gemini API error: Gemini returned empty response")
             return _generate_fallback_report(alert_description)
             
     except Exception as e:
-        logger.error(f"Error generating incident report with Gemini: {e}")
+        print(f"Gemini API error: {str(e)}")
         return _generate_fallback_report(alert_description)
 
 
@@ -241,7 +241,7 @@ Be helpful, concise, and technical. Use markdown for lists or code.
 """
 
         if not client:
-            logger.error("Gemini client not initialized. Cannot answer follow-up.")
+            print("Gemini API error: Gemini client not initialized. Cannot answer follow-up.")
             return "Error: AI service is unavailable due to missing API key."
 
         response = client.models.generate_content(
@@ -251,8 +251,10 @@ Be helpful, concise, and technical. Use markdown for lists or code.
         return response.text if response and response.text else "I'm sorry, I couldn't generate an answer."
         
     except Exception as e:
-        logger.error(f"Error answering follow-up: {e}")
+        print(f"Gemini API error: {str(e)}")
         return f"Error: {str(e)}"
+
+if __name__ == "__main__":
     # Quick test
     test_github = {
         "github_commits": [
