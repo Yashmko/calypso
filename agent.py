@@ -56,7 +56,7 @@ def investigate(alert_description: str, repo_full_name: str = "", compare_repo: 
             queries_meta["related_commits"] = {"sql": res["sql"], "time": res["execution_time_ms"]}
             
         # Security Alerts
-        res = get_github_security_alerts(owner, 10)
+        res = get_github_security_alerts(owner, repo, 10)
         security_alerts = res["data"]
         queries_meta["security_alerts"] = {"sql": res["sql"], "time": res["execution_time_ms"]}
         
@@ -184,5 +184,14 @@ def _extract_keywords(text: str) -> list:
 
 
 if __name__ == "__main__":
-    res = investigate("Test", "")
-    print(f"Meta keys: {res['queries_meta'].keys()}")
+    # Test with a repo that might not exist or have limited data
+    # to verify graceful failure/empty data handling.
+    try:
+        print("Running test investigation...")
+        res = investigate("High CPU usage alert", "yashmko/calypso")
+        print("Investigation completed successfully!")
+        print(f"Confidence Score: {res.get('evidence_score')}%")
+        print(f"Queries run: {list(res.get('queries_meta', {}).keys())}")
+        # print(res.get('ai_analysis')[:200] + "...")
+    except Exception as e:
+        print(f"Investigation failed with error: {e}")

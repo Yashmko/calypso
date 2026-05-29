@@ -38,52 +38,56 @@ def run_coral_query(sql: str) -> dict:
     Returns: { "data": [...], "sql": "...", "execution_time_ms": 0 }
     """
     start_time = time.time()
-    variants = [
-        ["coral", "sql", "--format", "json", sql],
-        ["coral", "query", "--json", sql],
-        ["coral", "query", sql]
-    ]
+    
+    # Correct syntax for installed Coral CLI: coral sql "<SQL>" --format json
+    cmd = ["coral", "sql", sql, "--format", "json"]
 
-    result_data = None
+    result_data = []
     last_error = ""
+    execution_time_ms = 0
 
-    for cmd in variants:
+    try:
+        # 1. Verify Coral CLI is available
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=60
-            )
+            subprocess.run(["coral", "--version"], capture_output=True, check=True, timeout=5)
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            logger.error("Coral CLI is not installed or not available.")
+            return {"data": [], "sql": sql, "execution_time_ms": 0, "error": "Coral CLI not found"}
 
-            if result.returncode != 0:
-                last_error = result.stderr.strip() or result.stdout.strip() or f"Process exited with code {result.returncode}"
-                continue
+        # 2. Execute the query
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
 
+        if result.returncode != 0:
+            stderr_output = result.stderr.strip()
+            stdout_output = result.stdout.strip()
+            last_error = stderr_output or stdout_output or f"Process exited with code {result.returncode}"
+            logger.warning(f"Coral query returned non-zero exit code: {last_error} | SQL: {sql}")
+        else:
             output = result.stdout.strip()
-            if not output:
-                last_error = "Empty output returned from Coral."
-                continue
+            if output:
+                try:
+                    data = json.loads(output)
+                    if isinstance(data, list):
+                        result_data = data
+                    elif isinstance(data, dict):
+                        result_data = data.get("results", []) or data.get("data", []) or []
+                    else:
+                        result_data = [data]
+                except json.JSONDecodeError as e:
+                    last_error = f"JSON parse error: {e}"
+                    logger.error(f"{last_error} | Output: {output[:200]}")
 
-            try:
-                data = json.loads(output)
-                if isinstance(data, list):
-                    result_data = data
-                elif isinstance(data, dict):
-                    result_data = data.get("results", []) or data.get("data", []) or []
-
-                break # Found a winner
-            except json.JSONDecodeError as e:
-                last_error = f"JSON parse error: {e}"
-                continue
-
-        except Exception as e:
-            last_error = str(e)
-            continue
-
-    if result_data is None:
-        logger.error(f"Coral query failed. Last error: {last_error} | SQL: {sql}")
-        raise RuntimeError(f"Coral query failed: {last_error}")
+    except subprocess.TimeoutExpired:
+        last_error = "Coral query timed out after 60 seconds."
+        logger.error(last_error)
+    except Exception as e:
+        last_error = str(e)
+        logger.error(f"Unexpected error during Coral query: {last_error}")
 
     execution_time_ms = int((time.time() - start_time) * 1000)    
     query_info = {
@@ -93,6 +97,9 @@ def run_coral_query(sql: str) -> dict:
         "timestamp": time.time()
     }
     
+    if last_error:
+        query_info["error"] = last_error
+
     # Update global history
     QUERY_HISTORY.append({
         "sql": sql,
@@ -108,14 +115,16 @@ def run_coral_query(sql: str) -> dict:
 def _check_source_connectivity(sql: str) -> bool:
     """Run a lightweight query purely to check return code (0 = connected)."""
     try:
+        # Correct syntax: coral sql "<SQL>" --format json
         result = subprocess.run(
-            ["coral", "sql", "--format", "json", sql],
+            ["coral", "sql", sql, "--format", "json"],
             capture_output=True,
             text=True,
             timeout=10
         )
         return result.returncode == 0
     except Exception:
+        # If coral is missing or query fails, we return False
         return False
 
 
@@ -165,13 +174,13 @@ def search_github_commits(owner: str, repo: str, keyword: str, limit: int = 10) 
     return run_coral_query(sql)
 
 
-def get_github_security_alerts(org: str, limit: int = 10) -> dict:
-    """Get open GitHub security alerts for an organization."""
-    org = sanitize_input(org)
+def get_github_security_alerts(owner: str, repo: str, limit: int = 10) -> dict:
+    """Get open GitHub security alerts for a repository."""
+    owner, repo = sanitize_input(owner), sanitize_input(repo)
     sql = f"""
     SELECT number, security_advisory__summary as title, state, severity, created_at
-    FROM github.alerts
-    WHERE org = '{org}' AND state = 'open'
+    FROM github.dependabot_alerts
+    WHERE owner = '{owner}' AND repo = '{repo}' AND state = 'open'
     LIMIT {limit}
     """
     return run_coral_query(sql)
